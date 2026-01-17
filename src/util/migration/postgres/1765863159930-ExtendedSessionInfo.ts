@@ -71,7 +71,19 @@ export class ExtendedSessionInfo1765863159930 implements MigrationInterface {
                 END IF;
             END $$;
         `);
-        await queryRunner.query(`ALTER TABLE "webhooks" ALTER COLUMN "source_channel_id" DROP DEFAULT`);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'webhooks'::regclass 
+                    AND attname = 'source_channel_id'
+                ) THEN
+                    ALTER TABLE "webhooks" ALTER COLUMN "source_channel_id" DROP DEFAULT;
+                END IF;
+            END $$;
+        `);
         await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT IF EXISTS "FK_085d540d9f418cfbdc7bd55bb19"`);
         await queryRunner.query(`
             DO $$ 
@@ -85,7 +97,19 @@ export class ExtendedSessionInfo1765863159930 implements MigrationInterface {
                 END IF;
             END $$;
         `);
-        await queryRunner.query(`ALTER TABLE "sessions" ALTER COLUMN "user_id" SET NOT NULL`);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'sessions'::regclass 
+                    AND attname = 'user_id'
+                ) THEN
+                    ALTER TABLE "sessions" ALTER COLUMN "user_id" SET NOT NULL;
+                END IF;
+            END $$;
+        `);
         await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_085d540d9f418cfbdc7bd55bb1" ON "sessions" ("user_id") `);
         await queryRunner.query(`
             DO $$ 
@@ -106,7 +130,19 @@ export class ExtendedSessionInfo1765863159930 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT IF EXISTS "FK_085d540d9f418cfbdc7bd55bb19"`);
         await queryRunner.query(`ALTER TABLE "webhooks" DROP CONSTRAINT IF EXISTS "FK_4495b7032a33c6b8b605d030398"`);
         await queryRunner.query(`DROP INDEX IF EXISTS "public"."IDX_085d540d9f418cfbdc7bd55bb1"`);
-        await queryRunner.query(`ALTER TABLE "sessions" ALTER COLUMN "user_id" DROP NOT NULL`);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'sessions'::regclass 
+                    AND attname = 'user_id'
+                ) THEN
+                    ALTER TABLE "sessions" ALTER COLUMN "user_id" DROP NOT NULL;
+                END IF;
+            END $$;
+        `);
         await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT IF EXISTS "PK_9340188c93349808f10d1db74a8"`);
         await queryRunner.query(`
             DO $$ 

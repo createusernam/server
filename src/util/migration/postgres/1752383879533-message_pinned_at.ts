@@ -17,7 +17,19 @@ export class MessagePinnedAt1752383879533 implements MigrationInterface {
                 END IF;
             END $$;
         `);
-        await queryRunner.query(`UPDATE "messages" SET "pinned_at" = NOW() WHERE "pinned" = true`);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'messages'::regclass 
+                    AND attname = 'pinned'
+                ) THEN
+                    UPDATE "messages" SET "pinned_at" = NOW() WHERE "pinned" = true;
+                END IF;
+            END $$;
+        `);
         await queryRunner.query(`ALTER TABLE "messages" DROP COLUMN IF EXISTS "pinned"`);
     }
 
@@ -35,7 +47,19 @@ export class MessagePinnedAt1752383879533 implements MigrationInterface {
                 END IF;
             END $$;
         `);
-        await queryRunner.query(`UPDATE "messages" SET "pinned" = true WHERE "pinned_at" IS NOT NULL`);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'messages'::regclass 
+                    AND attname = 'pinned_at'
+                ) THEN
+                    UPDATE "messages" SET "pinned" = true WHERE "pinned_at" IS NOT NULL;
+                END IF;
+            END $$;
+        `);
         await queryRunner.query(`ALTER TABLE "messages" DROP COLUMN IF EXISTS "pinned_at"`);
     }
 }

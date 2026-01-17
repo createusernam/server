@@ -20,12 +20,35 @@ export class guildChannelOrdering1696420827239 implements MigrationInterface {
             END $$;
         `);
 
-        for (const guild_id of guilds.records.map((x) => x.id)) {
-            const channels: Array<{ position: number; id: string }> = (await queryRunner.query(`SELECT id, position FROM channels WHERE guild_id = $1`, [guild_id], true)).records;
+        const positionExists = await queryRunner.query(`
+            SELECT 1 
+            FROM pg_attribute 
+            WHERE attrelid = 'channels'::regclass 
+            AND attname = 'position'
+        `);
 
-            channels.sort((a, b) => a.position - b.position);
+        if (positionExists && positionExists.length > 0) {
+            for (const guild_id of guilds.records.map((x) => x.id)) {
+                const channels: Array<{ position: number; id: string }> = (await queryRunner.query(`SELECT id, position FROM channels WHERE guild_id = $1`, [guild_id], true))
+                    .records;
 
-            await queryRunner.query(`UPDATE guilds SET channel_ordering = $1 WHERE id = $2`, [JSON.stringify(channels.map((x) => x.id)), guild_id]);
+                channels.sort((a, b) => a.position - b.position);
+
+                const channelOrderingValue = JSON.stringify(channels.map((x) => x.id));
+                await queryRunner.query(`
+                    DO $$ 
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 
+                            FROM pg_attribute 
+                            WHERE attrelid = 'guilds'::regclass 
+                            AND attname = 'channel_ordering'
+                        ) THEN
+                            UPDATE guilds SET channel_ordering = '${channelOrderingValue.replace(/'/g, "''")}' WHERE id = '${guild_id.replace(/'/g, "''")}';
+                        END IF;
+                    END $$;
+                `);
+            }
         }
 
         await queryRunner.query(`ALTER TABLE channels DROP COLUMN IF EXISTS position`);
@@ -46,14 +69,35 @@ export class guildChannelOrdering1696420827239 implements MigrationInterface {
             END $$;
         `);
 
-        const guilds = await queryRunner.query(`SELECT id, channel_ordering FROM guilds`, undefined, true);
+        const channelOrderingExists = await queryRunner.query(`
+            SELECT 1 
+            FROM pg_attribute 
+            WHERE attrelid = 'guilds'::regclass 
+            AND attname = 'channel_ordering'
+        `);
 
-        for (const guild of guilds.records) {
-            const channel_ordering: string[] = JSON.parse(guild.channel_ordering);
+        if (channelOrderingExists && channelOrderingExists.length > 0) {
+            const guilds = await queryRunner.query(`SELECT id, channel_ordering FROM guilds`, undefined, true);
 
-            for (let i = 0; i < channel_ordering.length; i++) {
-                const channel_id = channel_ordering[i];
-                await queryRunner.query(`UPDATE channels SET position = $1 WHERE id = $2`, [i, channel_id]);
+            for (const guild of guilds.records) {
+                const channel_ordering: string[] = JSON.parse(guild.channel_ordering);
+
+                for (let i = 0; i < channel_ordering.length; i++) {
+                    const channel_id = channel_ordering[i];
+                    await queryRunner.query(`
+                        DO $$ 
+                        BEGIN
+                            IF EXISTS (
+                                SELECT 1 
+                                FROM pg_attribute 
+                                WHERE attrelid = 'channels'::regclass 
+                                AND attname = 'position'
+                            ) THEN
+                                UPDATE channels SET position = ${i} WHERE id = '${channel_id.replace(/'/g, "''")}';
+                            END IF;
+                        END $$;
+                    `);
+                }
             }
         }
 

@@ -17,8 +17,32 @@ export class RoleColors1752321571508 implements MigrationInterface {
                 END IF;
             END $$;
         `);
-        await queryRunner.query(`UPDATE "roles" SET "colors" = jsonb_build_object('primary_color', "color") WHERE "colors" IS NULL`);
-        await queryRunner.query(`ALTER TABLE "roles" ALTER COLUMN "colors" SET NOT NULL`);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'roles'::regclass 
+                    AND attname = 'color'
+                ) THEN
+                    UPDATE "roles" SET "colors" = jsonb_build_object('primary_color', "color") WHERE "colors" IS NULL;
+                END IF;
+            END $$;
+        `);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'roles'::regclass 
+                    AND attname = 'colors'
+                ) THEN
+                    ALTER TABLE "roles" ALTER COLUMN "colors" SET NOT NULL;
+                END IF;
+            END $$;
+        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
