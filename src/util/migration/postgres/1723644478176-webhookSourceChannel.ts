@@ -20,7 +20,12 @@ export class WebhookSourceChannel1723644478176 implements MigrationInterface {
         await queryRunner.query(`
             DO $$ 
             BEGIN
-                IF NOT EXISTS (
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'webhooks'::regclass 
+                    AND attname = 'source_channel_id'
+                ) AND NOT EXISTS (
                     SELECT 1 
                     FROM pg_constraint 
                     WHERE conname = 'FK_d64f38834fa676f6caa4786ddd6'

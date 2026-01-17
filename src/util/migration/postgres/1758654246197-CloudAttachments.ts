@@ -12,6 +12,24 @@ export class CloudAttachments1758654246197 implements MigrationInterface {
             BEGIN
                 IF NOT EXISTS (
                     SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'cloud_attachments'::regclass 
+                    AND attname = 'userId'
+                ) THEN
+                    ALTER TABLE "cloud_attachments" ADD COLUMN "userId" character varying;
+                END IF;
+            END $$;
+        `);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'cloud_attachments'::regclass 
+                    AND attname = 'userId'
+                ) AND NOT EXISTS (
+                    SELECT 1 
                     FROM pg_constraint 
                     WHERE conname = 'FK_e6b32df2004e8ad0f488b4a2019'
                 ) THEN
@@ -24,6 +42,24 @@ export class CloudAttachments1758654246197 implements MigrationInterface {
             DO $$ 
             BEGIN
                 IF NOT EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'cloud_attachments'::regclass 
+                    AND attname = 'channelId'
+                ) THEN
+                    ALTER TABLE "cloud_attachments" ADD COLUMN "channelId" character varying;
+                END IF;
+            END $$;
+        `);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'cloud_attachments'::regclass 
+                    AND attname = 'channelId'
+                ) AND NOT EXISTS (
                     SELECT 1 
                     FROM pg_constraint 
                     WHERE conname = 'FK_cab965a18f8ca30293bff3d50a8'

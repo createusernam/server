@@ -230,7 +230,12 @@ export class ReconcileMigrationAttempts1760622755598 implements MigrationInterfa
         await queryRunner.query(`
             DO $$ 
             BEGIN
-                IF NOT EXISTS (
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'webhooks'::regclass 
+                    AND attname = 'source_channel_id'
+                ) AND NOT EXISTS (
                     SELECT 1 
                     FROM pg_constraint 
                     WHERE conname = 'FK_4495b7032a33c6b8b605d030398'
@@ -243,7 +248,12 @@ export class ReconcileMigrationAttempts1760622755598 implements MigrationInterfa
         await queryRunner.query(`
             DO $$ 
             BEGIN
-                IF NOT EXISTS (
+                IF EXISTS (
+                    SELECT 1 
+                    FROM pg_attribute 
+                    WHERE attrelid = 'applications'::regclass 
+                    AND attname = 'guild_id'
+                ) AND NOT EXISTS (
                     SELECT 1 
                     FROM pg_constraint 
                     WHERE conname = 'FK_e5bf78cdbbe9ba91062d74c5aba'
