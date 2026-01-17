@@ -23,17 +23,37 @@ export class ReconcileMigrationAttempts1760622755598 implements MigrationInterfa
         await queryRunner.query(`ALTER TABLE "categories" ALTER COLUMN "icon" TYPE character varying`);
         await queryRunner.query(`ALTER TABLE "user_settings_protos" ALTER COLUMN "userSettings" TYPE character varying`);
         await queryRunner.query(`ALTER TABLE "user_settings_protos" ALTER COLUMN "frecencySettings" TYPE character varying`);
-        await queryRunner.query(
-            `ALTER TABLE "webhooks" ADD CONSTRAINT "FK_4495b7032a33c6b8b605d030398" FOREIGN KEY ("source_channel_id") REFERENCES "channels"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
-        );
-        await queryRunner.query(
-            `ALTER TABLE "applications" ADD CONSTRAINT "FK_e5bf78cdbbe9ba91062d74c5aba" FOREIGN KEY ("guild_id") REFERENCES "guilds"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-        );
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 
+                    FROM pg_constraint 
+                    WHERE conname = 'FK_4495b7032a33c6b8b605d030398'
+                ) THEN
+                    ALTER TABLE "webhooks" ADD CONSTRAINT "FK_4495b7032a33c6b8b605d030398" 
+                    FOREIGN KEY ("source_channel_id") REFERENCES "channels"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+                END IF;
+            END $$;
+        `);
+        await queryRunner.query(`
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 
+                    FROM pg_constraint 
+                    WHERE conname = 'FK_e5bf78cdbbe9ba91062d74c5aba'
+                ) THEN
+                    ALTER TABLE "applications" ADD CONSTRAINT "FK_e5bf78cdbbe9ba91062d74c5aba" 
+                    FOREIGN KEY ("guild_id") REFERENCES "guilds"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+                END IF;
+            END $$;
+        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "applications" DROP CONSTRAINT "FK_e5bf78cdbbe9ba91062d74c5aba"`);
-        await queryRunner.query(`ALTER TABLE "webhooks" DROP CONSTRAINT "FK_4495b7032a33c6b8b605d030398"`);
+        await queryRunner.query(`ALTER TABLE "applications" DROP CONSTRAINT IF EXISTS "FK_e5bf78cdbbe9ba91062d74c5aba"`);
+        await queryRunner.query(`ALTER TABLE "webhooks" DROP CONSTRAINT IF EXISTS "FK_4495b7032a33c6b8b605d030398"`);
         await queryRunner.query(`ALTER TABLE "user_settings_protos" ALTER COLUMN "frecencySettings" TYPE text`);
         await queryRunner.query(`ALTER TABLE "user_settings_protos" ALTER COLUMN "userSettings" TYPE text`);
         await queryRunner.query(`ALTER TABLE "categories" ALTER COLUMN "icon" TYPE text`);

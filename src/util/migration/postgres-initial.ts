@@ -20,7 +20,7 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 export class initial0 implements MigrationInterface {
 	name = "initial0";
 	public async up(queryRunner: QueryRunner): Promise<void> {
-		await queryRunner.query(`CREATE TABLE public.applications (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.applications (
 			id character varying NOT NULL,
 			name character varying NOT NULL,
 			icon character varying,
@@ -51,7 +51,7 @@ export class initial0 implements MigrationInterface {
 			team_id character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.attachments (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.attachments (
 			id character varying NOT NULL,
 			filename character varying NOT NULL,
 			size integer NOT NULL,
@@ -63,7 +63,7 @@ export class initial0 implements MigrationInterface {
 			message_id character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.audit_logs (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.audit_logs (
 			id character varying NOT NULL,
 			user_id character varying,
 			action_type integer NOT NULL,
@@ -73,7 +73,7 @@ export class initial0 implements MigrationInterface {
 			target_id character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.backup_codes (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.backup_codes (
 			id character varying NOT NULL,
 			code character varying NOT NULL,
 			consumed boolean NOT NULL,
@@ -81,7 +81,7 @@ export class initial0 implements MigrationInterface {
 			user_id character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.bans (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.bans (
 			id character varying NOT NULL,
 			user_id character varying,
 			guild_id character varying,
@@ -90,14 +90,14 @@ export class initial0 implements MigrationInterface {
 			reason character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.categories (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.categories (
 			id integer NOT NULL,
 			name character varying,
 			localizations text NOT NULL,
 			is_primary boolean
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.channels (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.channels (
 			id character varying NOT NULL,
 			created_at timestamp without time zone NOT NULL,
 			name character varying,
@@ -122,7 +122,7 @@ export class initial0 implements MigrationInterface {
 			position integer NOT NULL DEFAULT 0
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.client_release (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.client_release (
 			id character varying NOT NULL,
 			name character varying NOT NULL,
 			pub_date timestamp without time zone NOT NULL,
@@ -132,12 +132,12 @@ export class initial0 implements MigrationInterface {
 			notes character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.config (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.config (
 			key character varying NOT NULL,
 			value text
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.connected_accounts (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.connected_accounts (
 			id character varying NOT NULL,
 			external_id character varying NOT NULL,
 			user_id character varying,
@@ -155,18 +155,18 @@ export class initial0 implements MigrationInterface {
 			token_data text
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.connection_config (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.connection_config (
 			key character varying NOT NULL,
 			value text
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.embed_cache (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.embed_cache (
 			id character varying NOT NULL,
 			url character varying NOT NULL,
 			embed text NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.emojis (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.emojis (
 			id character varying NOT NULL,
 			animated boolean NOT NULL,
 			available boolean NOT NULL,
@@ -179,7 +179,7 @@ export class initial0 implements MigrationInterface {
 			groups text
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.guilds (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.guilds (
 			id character varying NOT NULL,
 			afk_channel_id character varying,
 			afk_timeout integer,
@@ -221,7 +221,7 @@ export class initial0 implements MigrationInterface {
 			premium_progress_bar_enabled boolean
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.invites (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.invites (
 			code character varying NOT NULL,
 			temporary boolean NOT NULL,
 			uses integer NOT NULL,
@@ -238,12 +238,12 @@ export class initial0 implements MigrationInterface {
 			flags integer NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.member_roles (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.member_roles (
 			index integer NOT NULL,
 			role_id character varying NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.members (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.members (
 			index integer NOT NULL,
 			id character varying NOT NULL,
 			guild_id character varying NOT NULL,
@@ -273,27 +273,27 @@ export class initial0 implements MigrationInterface {
 			CACHE 1;`);
 
 		await queryRunner.query(`ALTER SEQUENCE public.members_index_seq OWNED BY public.members.index;`);
-		await queryRunner.query(`CREATE TABLE public.message_channel_mentions (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.message_channel_mentions (
 			"messagesId" character varying NOT NULL,
 			"channelsId" character varying NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.message_role_mentions (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.message_role_mentions (
 			"messagesId" character varying NOT NULL,
 			"rolesId" character varying NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.message_stickers (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.message_stickers (
 			"messagesId" character varying NOT NULL,
 			"stickersId" character varying NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.message_user_mentions (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.message_user_mentions (
 			"messagesId" character varying NOT NULL,
 			"usersId" character varying NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.messages (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.messages (
 			id character varying NOT NULL,
 			channel_id character varying,
 			guild_id character varying,
@@ -319,7 +319,7 @@ export class initial0 implements MigrationInterface {
 			flags integer
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.migrations (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.migrations (
 			id integer NOT NULL,
 			"timestamp" bigint NOT NULL,
 			name character varying NOT NULL
@@ -334,14 +334,14 @@ export class initial0 implements MigrationInterface {
 			CACHE 1;`);
 
 		await queryRunner.query(`ALTER SEQUENCE public.migrations_id_seq OWNED BY public.migrations.id;`);
-		await queryRunner.query(`CREATE TABLE public.notes (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.notes (
 			id character varying NOT NULL,
 			content character varying NOT NULL,
 			owner_id character varying,
 			target_id character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.rate_limits (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.rate_limits (
 			id character varying NOT NULL,
 			executor_id character varying NOT NULL,
 			hits integer NOT NULL,
@@ -349,7 +349,7 @@ export class initial0 implements MigrationInterface {
 			expires_at timestamp without time zone NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.read_states (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.read_states (
 			id character varying NOT NULL,
 			channel_id character varying NOT NULL,
 			user_id character varying NOT NULL,
@@ -360,14 +360,14 @@ export class initial0 implements MigrationInterface {
 			mention_count integer
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.recipients (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.recipients (
 			id character varying NOT NULL,
 			channel_id character varying NOT NULL,
 			user_id character varying NOT NULL,
 			closed boolean DEFAULT false NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.relationships (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.relationships (
 			id character varying NOT NULL,
 			from_id character varying NOT NULL,
 			to_id character varying NOT NULL,
@@ -375,7 +375,7 @@ export class initial0 implements MigrationInterface {
 			type integer NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.roles (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.roles (
 			id character varying NOT NULL,
 			guild_id character varying NOT NULL,
 			color integer NOT NULL,
@@ -391,7 +391,7 @@ export class initial0 implements MigrationInterface {
 			flags integer DEFAULT 0 NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.security_settings (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.security_settings (
 			id character varying NOT NULL,
 			guild_id character varying,
 			channel_id character varying,
@@ -401,7 +401,7 @@ export class initial0 implements MigrationInterface {
 			used_since_message character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.sessions (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.sessions (
 			id character varying NOT NULL,
 			user_id character varying,
 			session_id character varying NOT NULL,
@@ -410,7 +410,7 @@ export class initial0 implements MigrationInterface {
 			status character varying NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.sticker_packs (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.sticker_packs (
 			id character varying NOT NULL,
 			name character varying NOT NULL,
 			description character varying,
@@ -419,7 +419,7 @@ export class initial0 implements MigrationInterface {
 			"coverStickerId" character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.stickers (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.stickers (
 			id character varying NOT NULL,
 			name character varying NOT NULL,
 			description character varying,
@@ -432,7 +432,7 @@ export class initial0 implements MigrationInterface {
 			format_type integer NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.team_members (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.team_members (
 			id character varying NOT NULL,
 			membership_state integer NOT NULL,
 			permissions text NOT NULL,
@@ -440,14 +440,14 @@ export class initial0 implements MigrationInterface {
 			user_id character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.teams (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.teams (
 			id character varying NOT NULL,
 			icon character varying,
 			name character varying NOT NULL,
 			owner_user_id character varying
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.templates (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.templates (
 			id character varying NOT NULL,
 			code character varying NOT NULL,
 			name character varying NOT NULL,
@@ -460,7 +460,7 @@ export class initial0 implements MigrationInterface {
 			serialized_source_guild text NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.user_settings (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.user_settings (
 			index integer NOT NULL,
 			afk_timeout integer,
 			allow_accessibility_detection boolean,
@@ -505,7 +505,7 @@ export class initial0 implements MigrationInterface {
 		);
 
 		await queryRunner.query(`ALTER SEQUENCE public.user_settings_index_seq OWNED BY public.user_settings.index;`);
-		await queryRunner.query(`CREATE TABLE public.users (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.users (
 			id character varying NOT NULL,
 			username character varying NOT NULL,
 			discriminator character varying NOT NULL,
@@ -543,13 +543,13 @@ export class initial0 implements MigrationInterface {
 			"settingsIndex" integer
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.valid_registration_tokens (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.valid_registration_tokens (
 			token character varying NOT NULL,
 			created_at timestamp without time zone NOT NULL,
 			expires_at timestamp without time zone NOT NULL
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.voice_states (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.voice_states (
 			id character varying NOT NULL,
 			guild_id character varying,
 			channel_id character varying,
@@ -566,7 +566,7 @@ export class initial0 implements MigrationInterface {
 			request_to_speak_timestamp timestamp without time zone
 		);`);
 
-		await queryRunner.query(`CREATE TABLE public.webhooks (
+		await queryRunner.query(`CREATE TABLE IF NOT EXISTS public.webhooks (
 			id character varying NOT NULL,
 			type integer NOT NULL,
 			name character varying,
@@ -582,51 +582,546 @@ export class initial0 implements MigrationInterface {
 		await queryRunner.query(`ALTER TABLE ONLY public.members ALTER COLUMN index SET DEFAULT nextval('public.members_index_seq'::regclass);`);
 		await queryRunner.query(`ALTER TABLE ONLY public.migrations ALTER COLUMN id SET DEFAULT nextval('public.migrations_id_seq'::regclass);`);
 		await queryRunner.query(`ALTER TABLE ONLY public.user_settings ALTER COLUMN index SET DEFAULT nextval('public.user_settings_index_seq'::regclass);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.embed_cache ADD CONSTRAINT "PK_0abb7581d4efc5a8b1361389c5e" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "PK_18325f38ae6de43878487eff986" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.audit_logs ADD CONSTRAINT "PK_1bb179d048bbc581caa3b013439" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.categories ADD CONSTRAINT "PK_24dbc6126a28ff948da33e97d3b" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.config ADD CONSTRAINT "PK_26489c99ddbb4c91631ef5cc791" PRIMARY KEY (key);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.sessions ADD CONSTRAINT "PK_3238ef96f18b355b671619111bc" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.invites ADD CONSTRAINT "PK_33fd8a248db1cd832baa8aa25bf" PRIMARY KEY (code);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.backup_codes ADD CONSTRAINT "PK_34ab957382dbc57e8fb53f1638f" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.rate_limits ADD CONSTRAINT "PK_3b4449f1f5fc167d921ee619f65" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.security_settings ADD CONSTRAINT "PK_4aec436cf81177ae97a1bcec3c7" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.client_release ADD CONSTRAINT "PK_4c4ea258342d2d6ba1be0a71a43" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.templates ADD CONSTRAINT "PK_515948649ce0bbbe391de702ae5" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.attachments ADD CONSTRAINT "PK_5e1f050bcff31e3084a1d662412" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.connected_accounts ADD CONSTRAINT "PK_70416f1da0be645bb31da01c774" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_role_mentions ADD CONSTRAINT "PK_74dba92cc300452a6e14b83ed44" PRIMARY KEY ("messagesId", "rolesId");`);
-		await queryRunner.query(`ALTER TABLE ONLY public.teams ADD CONSTRAINT "PK_7e5523774a38b08a6236d322403" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_channel_mentions ADD CONSTRAINT "PK_85cb45351497cd9d06a79ced65e" PRIMARY KEY ("messagesId", "channelsId");`);
-		await queryRunner.query(`ALTER TABLE ONLY public.migrations ADD CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.applications ADD CONSTRAINT "PK_938c0a27255637bde919591888f" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.member_roles ADD CONSTRAINT "PK_951c1d72a0fd1da8760b4a1fd66" PRIMARY KEY (index, role_id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.emojis ADD CONSTRAINT "PK_9adb96a675f555c6169bad7ba62" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_user_mentions ADD CONSTRAINT "PK_9b9b6e245ad47a48dbd7605d4fb" PRIMARY KEY ("messagesId", "usersId");`);
-		await queryRunner.query(`ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "PK_9e8795cfc899ab7bdaa831e8527" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.sticker_packs ADD CONSTRAINT "PK_a27381efea0f876f5d3233af655" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.users ADD CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.bans ADD CONSTRAINT "PK_a4d6f261bffa4615c62d756566a" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "PK_ada09a50c134fad1369b510e3ce" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.notes ADD CONSTRAINT "PK_af6206538ea96c4e77e9f400c3d" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.members ADD CONSTRAINT "PK_b4a6b8c2478e5df990909c6cf6a" PRIMARY KEY (index);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.relationships ADD CONSTRAINT "PK_ba20e2f5cf487408e08e4dcecaf" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.connection_config ADD CONSTRAINT "PK_bc0554f736ad71dde346549488a" PRIMARY KEY (key);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.channels ADD CONSTRAINT "PK_bc603823f3f741359c2339389f9" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.roles ADD CONSTRAINT "PK_c1433d71a4838793a49dcad46ab" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.team_members ADD CONSTRAINT "PK_ca3eae89dcf20c9fd95bf7460aa" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.recipients ADD CONSTRAINT "PK_de8fc5a9c364568f294798fe1e9" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.valid_registration_tokens ADD CONSTRAINT "PK_e0f5c8e3fcefe3134a092c50485" PRIMARY KEY (token);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.stickers ADD CONSTRAINT "PK_e1dafa4063a5532645cc2810374" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.read_states ADD CONSTRAINT "PK_e6956a804978f01b713b1ed58e2" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "PK_e7e7f2a51bd6d96a9ac2aa560f9" PRIMARY KEY (id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.user_settings ADD CONSTRAINT "PK_e81f8bb92802737337d35c00981" PRIMARY KEY (index);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_stickers ADD CONSTRAINT "PK_ed820c4093d0b8cd1d2bcf66087" PRIMARY KEY ("messagesId", "stickersId");`);
-		await queryRunner.query(`ALTER TABLE ONLY public.users ADD CONSTRAINT "REL_0c14beb78d8c5ccba66072adbc" UNIQUE ("settingsIndex");`);
-		await queryRunner.query(`ALTER TABLE ONLY public.applications ADD CONSTRAINT "REL_2ce5a55796fe4c2f77ece57a64" UNIQUE (bot_user_id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.notes ADD CONSTRAINT "UQ_74e6689b9568cc965b8bfc9150b" UNIQUE (owner_id, target_id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.templates ADD CONSTRAINT "UQ_be38737bf339baf63b1daeffb55" UNIQUE (code);`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_0abb7581d4efc5a8b1361389c5e'
+				) THEN
+					ALTER TABLE ONLY public.embed_cache ADD CONSTRAINT "PK_0abb7581d4efc5a8b1361389c5e" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_18325f38ae6de43878487eff986'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "PK_18325f38ae6de43878487eff986" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_1bb179d048bbc581caa3b013439'
+				) THEN
+					ALTER TABLE ONLY public.audit_logs ADD CONSTRAINT "PK_1bb179d048bbc581caa3b013439" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_24dbc6126a28ff948da33e97d3b'
+				) THEN
+					ALTER TABLE ONLY public.categories ADD CONSTRAINT "PK_24dbc6126a28ff948da33e97d3b" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_26489c99ddbb4c91631ef5cc791'
+				) THEN
+					ALTER TABLE ONLY public.config ADD CONSTRAINT "PK_26489c99ddbb4c91631ef5cc791" PRIMARY KEY (key);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_3238ef96f18b355b671619111bc'
+				) THEN
+					ALTER TABLE ONLY public.sessions ADD CONSTRAINT "PK_3238ef96f18b355b671619111bc" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_33fd8a248db1cd832baa8aa25bf'
+				) THEN
+					ALTER TABLE ONLY public.invites ADD CONSTRAINT "PK_33fd8a248db1cd832baa8aa25bf" PRIMARY KEY (code);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_34ab957382dbc57e8fb53f1638f'
+				) THEN
+					ALTER TABLE ONLY public.backup_codes ADD CONSTRAINT "PK_34ab957382dbc57e8fb53f1638f" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_3b4449f1f5fc167d921ee619f65'
+				) THEN
+					ALTER TABLE ONLY public.rate_limits ADD CONSTRAINT "PK_3b4449f1f5fc167d921ee619f65" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_4aec436cf81177ae97a1bcec3c7'
+				) THEN
+					ALTER TABLE ONLY public.security_settings ADD CONSTRAINT "PK_4aec436cf81177ae97a1bcec3c7" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_4c4ea258342d2d6ba1be0a71a43'
+				) THEN
+					ALTER TABLE ONLY public.client_release ADD CONSTRAINT "PK_4c4ea258342d2d6ba1be0a71a43" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_515948649ce0bbbe391de702ae5'
+				) THEN
+					ALTER TABLE ONLY public.templates ADD CONSTRAINT "PK_515948649ce0bbbe391de702ae5" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_5e1f050bcff31e3084a1d662412'
+				) THEN
+					ALTER TABLE ONLY public.attachments ADD CONSTRAINT "PK_5e1f050bcff31e3084a1d662412" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_70416f1da0be645bb31da01c774'
+				) THEN
+					ALTER TABLE ONLY public.connected_accounts ADD CONSTRAINT "PK_70416f1da0be645bb31da01c774" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_74dba92cc300452a6e14b83ed44'
+				) THEN
+					ALTER TABLE ONLY public.message_role_mentions ADD CONSTRAINT "PK_74dba92cc300452a6e14b83ed44" PRIMARY KEY ("messagesId", "rolesId");
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_7e5523774a38b08a6236d322403'
+				) THEN
+					ALTER TABLE ONLY public.teams ADD CONSTRAINT "PK_7e5523774a38b08a6236d322403" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_85cb45351497cd9d06a79ced65e'
+				) THEN
+					ALTER TABLE ONLY public.message_channel_mentions ADD CONSTRAINT "PK_85cb45351497cd9d06a79ced65e" PRIMARY KEY ("messagesId", "channelsId");
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_8c82d7f526340ab734260ea46be'
+				) THEN
+					ALTER TABLE ONLY public.migrations ADD CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_938c0a27255637bde919591888f'
+				) THEN
+					ALTER TABLE ONLY public.applications ADD CONSTRAINT "PK_938c0a27255637bde919591888f" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_951c1d72a0fd1da8760b4a1fd66'
+				) THEN
+					ALTER TABLE ONLY public.member_roles ADD CONSTRAINT "PK_951c1d72a0fd1da8760b4a1fd66" PRIMARY KEY (index, role_id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_9adb96a675f555c6169bad7ba62'
+				) THEN
+					ALTER TABLE ONLY public.emojis ADD CONSTRAINT "PK_9adb96a675f555c6169bad7ba62" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_9b9b6e245ad47a48dbd7605d4fb'
+				) THEN
+					ALTER TABLE ONLY public.message_user_mentions ADD CONSTRAINT "PK_9b9b6e245ad47a48dbd7605d4fb" PRIMARY KEY ("messagesId", "usersId");
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_9e8795cfc899ab7bdaa831e8527'
+				) THEN
+					ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "PK_9e8795cfc899ab7bdaa831e8527" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_a27381efea0f876f5d3233af655'
+				) THEN
+					ALTER TABLE ONLY public.sticker_packs ADD CONSTRAINT "PK_a27381efea0f876f5d3233af655" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_a3ffb1c0c8416b9fc6f907b7433'
+				) THEN
+					ALTER TABLE ONLY public.users ADD CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_a4d6f261bffa4615c62d756566a'
+				) THEN
+					ALTER TABLE ONLY public.bans ADD CONSTRAINT "PK_a4d6f261bffa4615c62d756566a" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_ada09a50c134fad1369b510e3ce'
+				) THEN
+					ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "PK_ada09a50c134fad1369b510e3ce" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_af6206538ea96c4e77e9f400c3d'
+				) THEN
+					ALTER TABLE ONLY public.notes ADD CONSTRAINT "PK_af6206538ea96c4e77e9f400c3d" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_b4a6b8c2478e5df990909c6cf6a'
+				) THEN
+					ALTER TABLE ONLY public.members ADD CONSTRAINT "PK_b4a6b8c2478e5df990909c6cf6a" PRIMARY KEY (index);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_ba20e2f5cf487408e08e4dcecaf'
+				) THEN
+					ALTER TABLE ONLY public.relationships ADD CONSTRAINT "PK_ba20e2f5cf487408e08e4dcecaf" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_bc0554f736ad71dde346549488a'
+				) THEN
+					ALTER TABLE ONLY public.connection_config ADD CONSTRAINT "PK_bc0554f736ad71dde346549488a" PRIMARY KEY (key);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_bc603823f3f741359c2339389f9'
+				) THEN
+					ALTER TABLE ONLY public.channels ADD CONSTRAINT "PK_bc603823f3f741359c2339389f9" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_c1433d71a4838793a49dcad46ab'
+				) THEN
+					ALTER TABLE ONLY public.roles ADD CONSTRAINT "PK_c1433d71a4838793a49dcad46ab" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_ca3eae89dcf20c9fd95bf7460aa'
+				) THEN
+					ALTER TABLE ONLY public.team_members ADD CONSTRAINT "PK_ca3eae89dcf20c9fd95bf7460aa" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_de8fc5a9c364568f294798fe1e9'
+				) THEN
+					ALTER TABLE ONLY public.recipients ADD CONSTRAINT "PK_de8fc5a9c364568f294798fe1e9" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_e0f5c8e3fcefe3134a092c50485'
+				) THEN
+					ALTER TABLE ONLY public.valid_registration_tokens ADD CONSTRAINT "PK_e0f5c8e3fcefe3134a092c50485" PRIMARY KEY (token);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_e1dafa4063a5532645cc2810374'
+				) THEN
+					ALTER TABLE ONLY public.stickers ADD CONSTRAINT "PK_e1dafa4063a5532645cc2810374" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_e6956a804978f01b713b1ed58e2'
+				) THEN
+					ALTER TABLE ONLY public.read_states ADD CONSTRAINT "PK_e6956a804978f01b713b1ed58e2" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_e7e7f2a51bd6d96a9ac2aa560f9'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "PK_e7e7f2a51bd6d96a9ac2aa560f9" PRIMARY KEY (id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_e81f8bb92802737337d35c00981'
+				) THEN
+					ALTER TABLE ONLY public.user_settings ADD CONSTRAINT "PK_e81f8bb92802737337d35c00981" PRIMARY KEY (index);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'PK_ed820c4093d0b8cd1d2bcf66087'
+				) THEN
+					ALTER TABLE ONLY public.message_stickers ADD CONSTRAINT "PK_ed820c4093d0b8cd1d2bcf66087" PRIMARY KEY ("messagesId", "stickersId");
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'REL_0c14beb78d8c5ccba66072adbc'
+				) THEN
+					ALTER TABLE ONLY public.users ADD CONSTRAINT "REL_0c14beb78d8c5ccba66072adbc" UNIQUE ("settingsIndex");
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'REL_2ce5a55796fe4c2f77ece57a64'
+				) THEN
+					ALTER TABLE ONLY public.applications ADD CONSTRAINT "REL_2ce5a55796fe4c2f77ece57a64" UNIQUE (bot_user_id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'UQ_74e6689b9568cc965b8bfc9150b'
+				) THEN
+					ALTER TABLE ONLY public.notes ADD CONSTRAINT "UQ_74e6689b9568cc965b8bfc9150b" UNIQUE (owner_id, target_id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'UQ_be38737bf339baf63b1daeffb55'
+				) THEN
+					ALTER TABLE ONLY public.templates ADD CONSTRAINT "UQ_be38737bf339baf63b1daeffb55" UNIQUE (code);
+				END IF;
+			END $$;
+		`);
 		await queryRunner.query(`CREATE INDEX "IDX_05535bc695e9f7ee104616459d" ON public.messages USING btree (author_id);`);
 		await queryRunner.query(`CREATE UNIQUE INDEX "IDX_0abf8b443321bd3cf7f81ee17a" ON public.read_states USING btree (channel_id, user_id);`);
 		await queryRunner.query(`CREATE INDEX "IDX_29d63eb1a458200851bc37d074" ON public.message_role_mentions USING btree ("rolesId");`);
@@ -643,80 +1138,968 @@ export class initial0 implements MigrationInterface {
 		await queryRunner.query(`CREATE INDEX "IDX_bdb8c09e1464cabf62105bf4b9" ON public.message_channel_mentions USING btree ("channelsId");`);
 		await queryRunner.query(`CREATE INDEX "IDX_e22a70819d07659c7a71c112a1" ON public.message_stickers USING btree ("stickersId");`);
 		await queryRunner.query(`CREATE INDEX "IDX_e9080e7a7997a0170026d5139c" ON public.member_roles USING btree (role_id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "FK_03779ef216d4b0358470d9cb748" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_05535bc695e9f7ee104616459d3" FOREIGN KEY (author_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.bans ADD CONSTRAINT "FK_07ad88c86d1f290d46748410d58" FOREIGN KEY (executor_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.sessions ADD CONSTRAINT "FK_085d540d9f418cfbdc7bd55bb19" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.users ADD CONSTRAINT "FK_0c14beb78d8c5ccba66072adbc7" FOREIGN KEY ("settingsIndex") REFERENCES public.user_settings(index);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_0d523f6f997c86e052c49b1455f" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_11a0d394f8fc649c19ce5f16b59" FOREIGN KEY (target_user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.teams ADD CONSTRAINT "FK_13f00abf7cb6096c43ecaf8c108" FOREIGN KEY (owner_user_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_15c35422032e0b22b4ada95f48f" FOREIGN KEY (inviter_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.members ADD CONSTRAINT "FK_16aceddd5b89825b8ed6029ad1c" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.stickers ADD CONSTRAINT "FK_193d551d852aca5347ef5c9f205" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.read_states ADD CONSTRAINT "FK_195f92e4dd1254a4e348c043763" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.notes ADD CONSTRAINT "FK_23e08e5b4481711d573e1abecdc" FOREIGN KEY (target_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.members ADD CONSTRAINT "FK_28b53062261b996d9c99fa12404" FOREIGN KEY (id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_role_mentions ADD CONSTRAINT "FK_29d63eb1a458200851bc37d074b" FOREIGN KEY ("rolesId") REFERENCES public.roles(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_channel_mentions ADD CONSTRAINT "FK_2a27102ecd1d81b4582a4360921" FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.applications ADD CONSTRAINT "FK_2ce5a55796fe4c2f77ece57a647" FOREIGN KEY (bot_user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.recipients ADD CONSTRAINT "FK_2f18ee1ba667f233ae86c0ea60e" FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.channels ADD CONSTRAINT "FK_3274522d14af40540b1a883fc80" FOREIGN KEY (parent_id) REFERENCES public.channels(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.channels ADD CONSTRAINT "FK_3873ed438575cce703ecff4fc7b" FOREIGN KEY (owner_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_3a285f4f49c40e0706d3018bc9f" FOREIGN KEY (source_guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.audit_logs ADD CONSTRAINT "FK_3cd01cd3ae7aab010310d96ac8e" FOREIGN KEY (target_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_3f4939aa1461e8af57fea3fb05d" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_stickers ADD CONSTRAINT "FK_40bb6f23e7cc133292e92829d28" FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.read_states ADD CONSTRAINT "FK_40da2fca4e0eaf7a23b5bfc5d34" FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.templates ADD CONSTRAINT "FK_445d00eaaea0e60a017a5ed0c11" FOREIGN KEY (source_guild_id) REFERENCES public.guilds(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.sticker_packs ADD CONSTRAINT "FK_448fafba4355ee1c837bbc865f1" FOREIGN KEY ("coverStickerId") REFERENCES public.stickers(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_487a7af59d189f744fe394368fc" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.emojis ADD CONSTRAINT "FK_4b988e0db89d94cebcf07f598cc" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.bans ADD CONSTRAINT "FK_5999e8e449f80a236ff72023559" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_5d3ec1cb962de6488637fd779d6" FOREIGN KEY (application_id) REFERENCES public.applications(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.member_roles ADD CONSTRAINT "FK_5d7ddc8a5f9c167f548625e772e" FOREIGN KEY (index) REFERENCES public.members(index) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "FK_5fe1d5f931a67e85039c640001b" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.recipients ADD CONSTRAINT "FK_6157e8b6ba4e6e3089616481fe2" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_61a92bb65b302a76d9c1fcd3174" FOREIGN KEY (message_reference_id) REFERENCES public.messages(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.attachments ADD CONSTRAINT "FK_623e10eec51ada466c5038979e3" FOREIGN KEY (message_id) REFERENCES public.messages(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_6a15b051fe5050aa00a4b9ff0f6" FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.backup_codes ADD CONSTRAINT "FK_70066ea80d2f4b871beda32633b" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_86b9109b155eb70c0a2ca3b4b6d" FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_8d450b016dc8bec35f36729e4b0" FOREIGN KEY (public_updates_channel_id) REFERENCES public.channels(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.stickers ADD CONSTRAINT "FK_8f4ee73f2bb2325ff980502e158" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_95828668aa333460582e0ca6396" FOREIGN KEY (rules_channel_id) REFERENCES public.channels(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.relationships ADD CONSTRAINT "FK_9af4194bab1250b1c584ae4f1d7" FOREIGN KEY (from_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.relationships ADD CONSTRAINT "FK_9c7f6b98a9843b76dce1b0c878b" FOREIGN KEY (to_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_9d1d665379eefde7876a17afa99" FOREIGN KEY (widget_channel_id) REFERENCES public.channels(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.bans ADD CONSTRAINT "FK_9d3ab7dd180ebdd245cdb66ecad" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "FK_9f8d389866b40b6657edd026dd4" FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_user_mentions ADD CONSTRAINT "FK_a343387fc560ef378760681c236" FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.applications ADD CONSTRAINT "FK_a36ed02953077f408d0f3ebc424" FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_role_mentions ADD CONSTRAINT "FK_a8242cf535337a490b0feaea0b4" FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_b0525304f2262b7014245351c76" FOREIGN KEY (member_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_b193588441b085352a4c0109423" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_user_mentions ADD CONSTRAINT "FK_b831eb18ceebd28976239b1e2f8" FOREIGN KEY ("usersId") REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.audit_logs ADD CONSTRAINT "FK_bd2726fd31b35443f2245b93ba0" FOREIGN KEY (user_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_channel_mentions ADD CONSTRAINT "FK_bdb8c09e1464cabf62105bf4b9d" FOREIGN KEY ("channelsId") REFERENCES public.channels(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.channels ADD CONSTRAINT "FK_c253dafe5f3a03ec00cd8fb4581" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.team_members ADD CONSTRAINT "FK_c2bf4967c8c2a6b845dadfbf3d4" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.roles ADD CONSTRAINT "FK_c32c1ab1c4dc7dcb0278c4b1b8b" FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_c3e5305461931763b56aa905f1c" FOREIGN KEY (application_id) REFERENCES public.applications(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_cfc3d3ad260f8121c95b31a1fce" FOREIGN KEY (system_channel_id) REFERENCES public.channels(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.templates ADD CONSTRAINT "FK_d7374b7f8f5fbfdececa4fb62e1" FOREIGN KEY (creator_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_df528cf77e82f8032230e7e37d8" FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.message_stickers ADD CONSTRAINT "FK_e22a70819d07659c7a71c112a1f" FOREIGN KEY ("stickersId") REFERENCES public.stickers(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_e2a2f873a64a5cf62526de42325" FOREIGN KEY (template_id) REFERENCES public.templates(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.applications ADD CONSTRAINT "FK_e57508958bf92b9d9d25231b5e8" FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.stickers ADD CONSTRAINT "FK_e7cfa5cefa6661b3fb8fda8ce69" FOREIGN KEY (pack_id) REFERENCES public.sticker_packs(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.member_roles ADD CONSTRAINT "FK_e9080e7a7997a0170026d5139c1" FOREIGN KEY (role_id) REFERENCES public.roles(id) ON UPDATE CASCADE ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.connected_accounts ADD CONSTRAINT "FK_f47244225a6a1eac04a3463dd90" FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_f591a66b8019d87b0fe6c12dad6" FOREIGN KEY (afk_channel_id) REFERENCES public.channels(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_f83c04bcf1df4e5c0e7a52ed348" FOREIGN KEY (webhook_id) REFERENCES public.webhooks(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.notes ADD CONSTRAINT "FK_f9e103f8ae67cb1787063597925" FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;`);
-		await queryRunner.query(`ALTER TABLE ONLY public.emojis ADD CONSTRAINT "FK_fa7ddd5f9a214e28ce596548421" FOREIGN KEY (user_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_fc1a451727e3643ca572a3bb394" FOREIGN KEY (owner_id) REFERENCES public.users(id);`);
-		await queryRunner.query(`ALTER TABLE ONLY public.team_members ADD CONSTRAINT "FK_fdad7d5768277e60c40e01cdcea" FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_03779ef216d4b0358470d9cb748'
+				) THEN
+					ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "FK_03779ef216d4b0358470d9cb748" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_05535bc695e9f7ee104616459d3'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_05535bc695e9f7ee104616459d3" 
+					FOREIGN KEY (author_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_07ad88c86d1f290d46748410d58'
+				) THEN
+					ALTER TABLE ONLY public.bans ADD CONSTRAINT "FK_07ad88c86d1f290d46748410d58" 
+					FOREIGN KEY (executor_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_085d540d9f418cfbdc7bd55bb19'
+				) THEN
+					ALTER TABLE ONLY public.sessions ADD CONSTRAINT "FK_085d540d9f418cfbdc7bd55bb19" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_0c14beb78d8c5ccba66072adbc7'
+				) THEN
+					ALTER TABLE ONLY public.users ADD CONSTRAINT "FK_0c14beb78d8c5ccba66072adbc7" 
+					FOREIGN KEY ("settingsIndex") REFERENCES public.user_settings(index);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_0d523f6f997c86e052c49b1455f'
+				) THEN
+					ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_0d523f6f997c86e052c49b1455f" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_11a0d394f8fc649c19ce5f16b59'
+				) THEN
+					ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_11a0d394f8fc649c19ce5f16b59" 
+					FOREIGN KEY (target_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_13f00abf7cb6096c43ecaf8c108'
+				) THEN
+					ALTER TABLE ONLY public.teams ADD CONSTRAINT "FK_13f00abf7cb6096c43ecaf8c108" 
+					FOREIGN KEY (owner_user_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_15c35422032e0b22b4ada95f48f'
+				) THEN
+					ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_15c35422032e0b22b4ada95f48f" 
+					FOREIGN KEY (inviter_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_16aceddd5b89825b8ed6029ad1c'
+				) THEN
+					ALTER TABLE ONLY public.members ADD CONSTRAINT "FK_16aceddd5b89825b8ed6029ad1c" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_193d551d852aca5347ef5c9f205'
+				) THEN
+					ALTER TABLE ONLY public.stickers ADD CONSTRAINT "FK_193d551d852aca5347ef5c9f205" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_195f92e4dd1254a4e348c043763'
+				) THEN
+					ALTER TABLE ONLY public.read_states ADD CONSTRAINT "FK_195f92e4dd1254a4e348c043763" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_23e08e5b4481711d573e1abecdc'
+				) THEN
+					ALTER TABLE ONLY public.notes ADD CONSTRAINT "FK_23e08e5b4481711d573e1abecdc" 
+					FOREIGN KEY (target_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_28b53062261b996d9c99fa12404'
+				) THEN
+					ALTER TABLE ONLY public.members ADD CONSTRAINT "FK_28b53062261b996d9c99fa12404" 
+					FOREIGN KEY (id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_29d63eb1a458200851bc37d074b'
+				) THEN
+					ALTER TABLE ONLY public.message_role_mentions ADD CONSTRAINT "FK_29d63eb1a458200851bc37d074b" 
+					FOREIGN KEY ("rolesId") REFERENCES public.roles(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_2a27102ecd1d81b4582a4360921'
+				) THEN
+					ALTER TABLE ONLY public.message_channel_mentions ADD CONSTRAINT "FK_2a27102ecd1d81b4582a4360921" 
+					FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_2ce5a55796fe4c2f77ece57a647'
+				) THEN
+					ALTER TABLE ONLY public.applications ADD CONSTRAINT "FK_2ce5a55796fe4c2f77ece57a647" 
+					FOREIGN KEY (bot_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_2f18ee1ba667f233ae86c0ea60e'
+				) THEN
+					ALTER TABLE ONLY public.recipients ADD CONSTRAINT "FK_2f18ee1ba667f233ae86c0ea60e" 
+					FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_3274522d14af40540b1a883fc80'
+				) THEN
+					ALTER TABLE ONLY public.channels ADD CONSTRAINT "FK_3274522d14af40540b1a883fc80" 
+					FOREIGN KEY (parent_id) REFERENCES public.channels(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_3873ed438575cce703ecff4fc7b'
+				) THEN
+					ALTER TABLE ONLY public.channels ADD CONSTRAINT "FK_3873ed438575cce703ecff4fc7b" 
+					FOREIGN KEY (owner_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_3a285f4f49c40e0706d3018bc9f'
+				) THEN
+					ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_3a285f4f49c40e0706d3018bc9f" 
+					FOREIGN KEY (source_guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_3cd01cd3ae7aab010310d96ac8e'
+				) THEN
+					ALTER TABLE ONLY public.audit_logs ADD CONSTRAINT "FK_3cd01cd3ae7aab010310d96ac8e" 
+					FOREIGN KEY (target_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_3f4939aa1461e8af57fea3fb05d'
+				) THEN
+					ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_3f4939aa1461e8af57fea3fb05d" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_40bb6f23e7cc133292e92829d28'
+				) THEN
+					ALTER TABLE ONLY public.message_stickers ADD CONSTRAINT "FK_40bb6f23e7cc133292e92829d28" 
+					FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_40da2fca4e0eaf7a23b5bfc5d34'
+				) THEN
+					ALTER TABLE ONLY public.read_states ADD CONSTRAINT "FK_40da2fca4e0eaf7a23b5bfc5d34" 
+					FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_445d00eaaea0e60a017a5ed0c11'
+				) THEN
+					ALTER TABLE ONLY public.templates ADD CONSTRAINT "FK_445d00eaaea0e60a017a5ed0c11" 
+					FOREIGN KEY (source_guild_id) REFERENCES public.guilds(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_448fafba4355ee1c837bbc865f1'
+				) THEN
+					ALTER TABLE ONLY public.sticker_packs ADD CONSTRAINT "FK_448fafba4355ee1c837bbc865f1" 
+					FOREIGN KEY ("coverStickerId") REFERENCES public.stickers(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_487a7af59d189f744fe394368fc'
+				) THEN
+					ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_487a7af59d189f744fe394368fc" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_4b988e0db89d94cebcf07f598cc'
+				) THEN
+					ALTER TABLE ONLY public.emojis ADD CONSTRAINT "FK_4b988e0db89d94cebcf07f598cc" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_5999e8e449f80a236ff72023559'
+				) THEN
+					ALTER TABLE ONLY public.bans ADD CONSTRAINT "FK_5999e8e449f80a236ff72023559" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_5d3ec1cb962de6488637fd779d6'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_5d3ec1cb962de6488637fd779d6" 
+					FOREIGN KEY (application_id) REFERENCES public.applications(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_5d7ddc8a5f9c167f548625e772e'
+				) THEN
+					ALTER TABLE ONLY public.member_roles ADD CONSTRAINT "FK_5d7ddc8a5f9c167f548625e772e" 
+					FOREIGN KEY (index) REFERENCES public.members(index) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_5fe1d5f931a67e85039c640001b'
+				) THEN
+					ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "FK_5fe1d5f931a67e85039c640001b" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_6157e8b6ba4e6e3089616481fe2'
+				) THEN
+					ALTER TABLE ONLY public.recipients ADD CONSTRAINT "FK_6157e8b6ba4e6e3089616481fe2" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_61a92bb65b302a76d9c1fcd3174'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_61a92bb65b302a76d9c1fcd3174" 
+					FOREIGN KEY (message_reference_id) REFERENCES public.messages(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_623e10eec51ada466c5038979e3'
+				) THEN
+					ALTER TABLE ONLY public.attachments ADD CONSTRAINT "FK_623e10eec51ada466c5038979e3" 
+					FOREIGN KEY (message_id) REFERENCES public.messages(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_6a15b051fe5050aa00a4b9ff0f6'
+				) THEN
+					ALTER TABLE ONLY public.invites ADD CONSTRAINT "FK_6a15b051fe5050aa00a4b9ff0f6" 
+					FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_70066ea80d2f4b871beda32633b'
+				) THEN
+					ALTER TABLE ONLY public.backup_codes ADD CONSTRAINT "FK_70066ea80d2f4b871beda32633b" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_86b9109b155eb70c0a2ca3b4b6d'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_86b9109b155eb70c0a2ca3b4b6d" 
+					FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_8d450b016dc8bec35f36729e4b0'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_8d450b016dc8bec35f36729e4b0" 
+					FOREIGN KEY (public_updates_channel_id) REFERENCES public.channels(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_8f4ee73f2bb2325ff980502e158'
+				) THEN
+					ALTER TABLE ONLY public.stickers ADD CONSTRAINT "FK_8f4ee73f2bb2325ff980502e158" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_95828668aa333460582e0ca6396'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_95828668aa333460582e0ca6396" 
+					FOREIGN KEY (rules_channel_id) REFERENCES public.channels(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_9af4194bab1250b1c584ae4f1d7'
+				) THEN
+					ALTER TABLE ONLY public.relationships ADD CONSTRAINT "FK_9af4194bab1250b1c584ae4f1d7" 
+					FOREIGN KEY (from_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_9c7f6b98a9843b76dce1b0c878b'
+				) THEN
+					ALTER TABLE ONLY public.relationships ADD CONSTRAINT "FK_9c7f6b98a9843b76dce1b0c878b" 
+					FOREIGN KEY (to_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_9d1d665379eefde7876a17afa99'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_9d1d665379eefde7876a17afa99" 
+					FOREIGN KEY (widget_channel_id) REFERENCES public.channels(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_9d3ab7dd180ebdd245cdb66ecad'
+				) THEN
+					ALTER TABLE ONLY public.bans ADD CONSTRAINT "FK_9d3ab7dd180ebdd245cdb66ecad" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_9f8d389866b40b6657edd026dd4'
+				) THEN
+					ALTER TABLE ONLY public.voice_states ADD CONSTRAINT "FK_9f8d389866b40b6657edd026dd4" 
+					FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_a343387fc560ef378760681c236'
+				) THEN
+					ALTER TABLE ONLY public.message_user_mentions ADD CONSTRAINT "FK_a343387fc560ef378760681c236" 
+					FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_a36ed02953077f408d0f3ebc424'
+				) THEN
+					ALTER TABLE ONLY public.applications ADD CONSTRAINT "FK_a36ed02953077f408d0f3ebc424" 
+					FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_a8242cf535337a490b0feaea0b4'
+				) THEN
+					ALTER TABLE ONLY public.message_role_mentions ADD CONSTRAINT "FK_a8242cf535337a490b0feaea0b4" 
+					FOREIGN KEY ("messagesId") REFERENCES public.messages(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_b0525304f2262b7014245351c76'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_b0525304f2262b7014245351c76" 
+					FOREIGN KEY (member_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_b193588441b085352a4c0109423'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_b193588441b085352a4c0109423" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_b831eb18ceebd28976239b1e2f8'
+				) THEN
+					ALTER TABLE ONLY public.message_user_mentions ADD CONSTRAINT "FK_b831eb18ceebd28976239b1e2f8" 
+					FOREIGN KEY ("usersId") REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_bd2726fd31b35443f2245b93ba0'
+				) THEN
+					ALTER TABLE ONLY public.audit_logs ADD CONSTRAINT "FK_bd2726fd31b35443f2245b93ba0" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_bdb8c09e1464cabf62105bf4b9d'
+				) THEN
+					ALTER TABLE ONLY public.message_channel_mentions ADD CONSTRAINT "FK_bdb8c09e1464cabf62105bf4b9d" 
+					FOREIGN KEY ("channelsId") REFERENCES public.channels(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_c253dafe5f3a03ec00cd8fb4581'
+				) THEN
+					ALTER TABLE ONLY public.channels ADD CONSTRAINT "FK_c253dafe5f3a03ec00cd8fb4581" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_c2bf4967c8c2a6b845dadfbf3d4'
+				) THEN
+					ALTER TABLE ONLY public.team_members ADD CONSTRAINT "FK_c2bf4967c8c2a6b845dadfbf3d4" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_c32c1ab1c4dc7dcb0278c4b1b8b'
+				) THEN
+					ALTER TABLE ONLY public.roles ADD CONSTRAINT "FK_c32c1ab1c4dc7dcb0278c4b1b8b" 
+					FOREIGN KEY (guild_id) REFERENCES public.guilds(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_c3e5305461931763b56aa905f1c'
+				) THEN
+					ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_c3e5305461931763b56aa905f1c" 
+					FOREIGN KEY (application_id) REFERENCES public.applications(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_cfc3d3ad260f8121c95b31a1fce'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_cfc3d3ad260f8121c95b31a1fce" 
+					FOREIGN KEY (system_channel_id) REFERENCES public.channels(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_d7374b7f8f5fbfdececa4fb62e1'
+				) THEN
+					ALTER TABLE ONLY public.templates ADD CONSTRAINT "FK_d7374b7f8f5fbfdececa4fb62e1" 
+					FOREIGN KEY (creator_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_df528cf77e82f8032230e7e37d8'
+				) THEN
+					ALTER TABLE ONLY public.webhooks ADD CONSTRAINT "FK_df528cf77e82f8032230e7e37d8" 
+					FOREIGN KEY (channel_id) REFERENCES public.channels(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_e22a70819d07659c7a71c112a1f'
+				) THEN
+					ALTER TABLE ONLY public.message_stickers ADD CONSTRAINT "FK_e22a70819d07659c7a71c112a1f" 
+					FOREIGN KEY ("stickersId") REFERENCES public.stickers(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_e2a2f873a64a5cf62526de42325'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_e2a2f873a64a5cf62526de42325" 
+					FOREIGN KEY (template_id) REFERENCES public.templates(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_e57508958bf92b9d9d25231b5e8'
+				) THEN
+					ALTER TABLE ONLY public.applications ADD CONSTRAINT "FK_e57508958bf92b9d9d25231b5e8" 
+					FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_e7cfa5cefa6661b3fb8fda8ce69'
+				) THEN
+					ALTER TABLE ONLY public.stickers ADD CONSTRAINT "FK_e7cfa5cefa6661b3fb8fda8ce69" 
+					FOREIGN KEY (pack_id) REFERENCES public.sticker_packs(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_e9080e7a7997a0170026d5139c1'
+				) THEN
+					ALTER TABLE ONLY public.member_roles ADD CONSTRAINT "FK_e9080e7a7997a0170026d5139c1" 
+					FOREIGN KEY (role_id) REFERENCES public.roles(id) ON UPDATE CASCADE ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_f47244225a6a1eac04a3463dd90'
+				) THEN
+					ALTER TABLE ONLY public.connected_accounts ADD CONSTRAINT "FK_f47244225a6a1eac04a3463dd90" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_f591a66b8019d87b0fe6c12dad6'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_f591a66b8019d87b0fe6c12dad6" 
+					FOREIGN KEY (afk_channel_id) REFERENCES public.channels(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_f83c04bcf1df4e5c0e7a52ed348'
+				) THEN
+					ALTER TABLE ONLY public.messages ADD CONSTRAINT "FK_f83c04bcf1df4e5c0e7a52ed348" 
+					FOREIGN KEY (webhook_id) REFERENCES public.webhooks(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_f9e103f8ae67cb1787063597925'
+				) THEN
+					ALTER TABLE ONLY public.notes ADD CONSTRAINT "FK_f9e103f8ae67cb1787063597925" 
+					FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_fa7ddd5f9a214e28ce596548421'
+				) THEN
+					ALTER TABLE ONLY public.emojis ADD CONSTRAINT "FK_fa7ddd5f9a214e28ce596548421" 
+					FOREIGN KEY (user_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_fc1a451727e3643ca572a3bb394'
+				) THEN
+					ALTER TABLE ONLY public.guilds ADD CONSTRAINT "FK_fc1a451727e3643ca572a3bb394" 
+					FOREIGN KEY (owner_id) REFERENCES public.users(id);
+				END IF;
+			END $$;
+		`);
+		await queryRunner.query(`
+			DO $$ 
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 
+					FROM pg_constraint 
+					WHERE conname = 'FK_fdad7d5768277e60c40e01cdcea'
+				) THEN
+					ALTER TABLE ONLY public.team_members ADD CONSTRAINT "FK_fdad7d5768277e60c40e01cdcea" 
+					FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+				END IF;
+			END $$;
+		`);
 	}
 
 	public async down(queryRunner: QueryRunner): Promise<void> {
