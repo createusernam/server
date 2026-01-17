@@ -53,6 +53,28 @@ export class Config {
 
         config = OrmUtils.mergeDeep({}, { ...new ConfigValue() }, config);
 
+        // Set default values for required config fields if they are null (for new installations)
+        if (!config.general) config.general = new ConfigValue().general;
+        if (!config.api) config.api = new ConfigValue().api;
+        if (!config.cdn) config.cdn = new ConfigValue().cdn;
+        if (!config.gateway) config.gateway = new ConfigValue().gateway;
+
+        if (!config.general.serverName) {
+            config.general.serverName = "http://localhost:3001";
+        }
+        if (!config.api.endpointPublic) {
+            config.api.endpointPublic = "http://localhost:3001/api/v9";
+        }
+        if (!config.cdn.endpointPublic) {
+            config.cdn.endpointPublic = "http://localhost:3001";
+        }
+        if (!config.cdn.endpointPrivate) {
+            config.cdn.endpointPrivate = "http://localhost:3001";
+        }
+        if (!config.gateway.endpointPublic) {
+            config.gateway.endpointPublic = "ws://localhost:3001";
+        }
+
         // TODO: factor this out someday
         if (process.env.CDN_SIGNATURE_PATH) config.security.cdnSignatureKey = (await fs.readFile(process.env.CDN_SIGNATURE_PATH, "utf-8")).trim();
         if (process.env.LEGACY_JWT_SECRET_PATH) config.security.jwtSecret = (await fs.readFile(process.env.LEGACY_JWT_SECRET_PATH, "utf-8")).trim();
