@@ -26,13 +26,16 @@ IMAGE_NAME="${IMAGE_NAME:-spacebar-server}"
 echo "🚀 Начинаем развертывание Spacebar Server из ветки: $BRANCH"
 
 # Создаем директории если их нет
-mkdir -p "$REPO_DIR" "$BACKUP_DIR"
+mkdir -p "$REPO_DIR" "$BACKUP_DIR" "$SERVER_DIR"
 
 # Переходим в директорию репозитория
 if [ ! -d "$SERVER_DIR/.git" ]; then
     echo "📦 Клонируем репозиторий..."
     cd "$REPO_DIR"
     git clone "$GIT_REPO" server-temp
+    # Создаем целевую директорию если её нет
+    mkdir -p "$SERVER_DIR"
+    # Перемещаем файлы
     mv server-temp/* server-temp/.git "$SERVER_DIR/" 2>/dev/null || true
     rm -rf server-temp
 else

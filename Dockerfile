@@ -25,13 +25,27 @@ ARG BRANCH
 
 WORKDIR /build
 
+# Устанавливаем системный Python3 и инструменты сборки
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential pkg-config && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        pkg-config \
+        python3 \
+        python3-dev \
+        python3-distutils \
+        make \
+        g++ && \
+    rm -rf /var/lib/apt/lists/* && \
+    # Используем системный Python3
+    ln -sf /usr/bin/python3 /usr/bin/python
 
 WORKDIR /build/server
 
 COPY . .
+
+# Устанавливаем переменную окружения для использования системного Python3
+ENV PYTHON=/usr/bin/python3
+ENV npm_config_python=/usr/bin/python3
 
 RUN npm i \
     && npm run setup
