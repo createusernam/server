@@ -33,18 +33,27 @@ RUN apt-get update && \
         python3 \
         python3-dev \
         make \
-        g++ && \
+        g++ \
+        gcc \
+        cmake \
+        libc6-dev \
+        libstdc++-dev && \
     rm -rf /var/lib/apt/lists/* && \
     # Используем системный Python3
-    ln -sf /usr/bin/python3 /usr/bin/python
+    ln -sf /usr/bin/python3 /usr/bin/python && \
+    # Проверяем версию компилятора
+    g++ --version
 
 WORKDIR /build/server
 
 COPY . .
 
-# Устанавливаем переменную окружения для использования системного Python3
+# Устанавливаем переменные окружения для компиляции
 ENV PYTHON=/usr/bin/python3
 ENV npm_config_python=/usr/bin/python3
+# Флаги компиляции для C++ (может помочь с проблемами совместимости)
+ENV CXXFLAGS="-std=c++17"
+ENV CFLAGS="-O2"
 
 RUN npm i \
     && npm run setup
