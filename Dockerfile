@@ -37,7 +37,7 @@ RUN apt-get update && \
         gcc \
         cmake \
         libc6-dev \
-        libstdc++-dev && \
+        libstdc++-14-dev && \
     rm -rf /var/lib/apt/lists/* && \
     # Используем системный Python3
     ln -sf /usr/bin/python3 /usr/bin/python && \
