@@ -1,5 +1,5 @@
 ARG DEBIAN_CODE=trixie
-ARG NODE_VERSION=24
+ARG NODE_VERSION=20
 ARG PYTHON_VERSION=3.13
 ARG USER_NAME=spacebar
 ARG USER_GROUP=$USER_NAME
@@ -50,7 +50,6 @@ COPY . .
 
 # Устанавливаем переменные окружения для компиляции
 ENV PYTHON=/usr/bin/python3
-ENV npm_config_python=/usr/bin/python3
 # Флаги компиляции для C++ (может помочь с проблемами совместимости)
 ENV CXXFLAGS="-std=c++17"
 ENV CFLAGS="-O2"
