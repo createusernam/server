@@ -25,7 +25,7 @@ export class RegionConfiguration {
         {
             id: "spacebar",
             name: "spacebar",
-            endpoint: "127.0.0.1:3004",
+            endpoint: "172.29.46.139:3004",
             vip: false,
             custom: false,
             deprecated: false,

@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Скрипт развертывания Spacebar Server на VPS
+# Использование: ./deploy.sh [branch]
+#
+# Перед использованием создайте файл deploy.config на основе deploy.config.example
+# cp deploy.config.example deploy.config
+# nano deploy.config
+
+set -e
+
+# Загружаем конфигурацию если она существует
+if [ -f "deploy.config" ]; then
+    source deploy.config
+fi
+
+# Параметры по умолчанию
+BRANCH="${1:-${DEPLOY_BRANCH:-vps-spacebar-fermi-test}}"
+GIT_REPO="${GIT_REPO:-https://github.com/createusernam/server.git}"
+REPO_DIR="/opt/spacebar"
+SERVER_DIR="${DEPLOY_DIR:-$REPO_DIR/server}"
+BACKUP_DIR="${BACKUP_DIR:-/opt/spacebar-backups}"
+CONTAINER_NAME="${CONTAINER_NAME:-spacebar-server}"
+IMAGE_NAME="${IMAGE_NAME:-spacebar-server}"
+
+echo "🚀 Начинаем развертывание Spacebar Server из ветки: $BRANCH"
+
+# Создаем директории если их нет
+mkdir -p "$REPO_DIR" "$BACKUP_DIR"
+
+# Переходим в директорию репозитория
+if [ ! -d "$SERVER_DIR/.git" ]; then
+    echo "📦 Клонируем репозиторий..."
+    cd "$REPO_DIR"
+    git clone "$GIT_REPO" server-temp
+    mv server-temp/* server-temp/.git "$SERVER_DIR/" 2>/dev/null || true
+    rm -rf server-temp
+else
+    echo "📥 Обновляем репозиторий..."
+    cd "$SERVER_DIR"
+    git fetch origin
+fi
+
+cd "$SERVER_DIR"
+
+# Переключаемся на нужную ветку
+echo "🔀 Переключаемся на ветку $BRANCH..."
+git checkout "$BRANCH" || git checkout -b "$BRANCH" origin/"$BRANCH"
+git pull origin "$BRANCH" || true
+
+# Создаем бэкап текущей версии если она запущена
+if docker ps | grep -q "$CONTAINER_NAME"; then
+    echo "💾 Создаем бэкап..."
+    BACKUP_NAME="backup-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$BACKUP_DIR/$BACKUP_NAME"
+    docker cp "$CONTAINER_NAME:/spacebar/config.json" "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
+    docker cp "$CONTAINER_NAME:/spacebar/database.db" "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
+fi
+
+# Останавливаем старые контейнеры
+echo "🛑 Останавливаем старые контейнеры..."
+docker-compose -f docker-compose.vps.yml down || true
+docker stop "$CONTAINER_NAME" 2>/dev/null || true
+docker rm "$CONTAINER_NAME" 2>/dev/null || true
+
+# Собираем новый образ
+echo "🔨 Собираем Docker образ..."
+docker build -t "${IMAGE_NAME}:latest" .
+
+# Запускаем контейнер
+echo "▶️  Запускаем контейнер..."
+docker-compose -f docker-compose.vps.yml up -d
+
+# Ждем запуска
+echo "⏳ Ждем запуска сервера..."
+sleep 10
+
+# Проверяем статус
+if docker ps | grep -q "$CONTAINER_NAME"; then
+    echo "✅ Развертывание завершено успешно!"
+    echo "📊 Статус контейнера:"
+    docker ps | grep "$CONTAINER_NAME"
+else
+    echo "❌ Ошибка: контейнер не запущен"
+    echo "📋 Логи:"
+    docker logs "$CONTAINER_NAME" --tail 50
+    exit 1
+fi

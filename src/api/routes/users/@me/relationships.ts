@@ -131,16 +131,26 @@ router.post(
         },
     }),
     async (req: Request, res: Response) => {
+        // Если дискриминатор указан, ищем по username + discriminator
+        // Если нет, ищем только по username (берем первого пользователя с таким username)
+        const where: {
+            username: string;
+            discriminator?: string;
+        } = {
+            username: req.body.username,
+        };
+
+        if (req.body.discriminator) {
+            where.discriminator = String(req.body.discriminator).padStart(4, "0"); //Discord send the discriminator as integer, we need to add leading zeroes
+        }
+
         return await updateRelationship(
             req,
             res,
             await User.findOneOrFail({
                 relations: { relationships: { to: true } },
                 select: userProjection,
-                where: {
-                    discriminator: String(req.body.discriminator).padStart(4, "0"), //Discord send the discriminator as integer, we need to add leading zeroes
-                    username: req.body.username,
-                },
+                where,
             }),
             req.body.type,
         );

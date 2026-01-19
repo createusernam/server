@@ -152,9 +152,25 @@ export const checkToken = (
             legacyVersion = 1;
             jwt.verify(token, Config.get().security.jwtSecret!, { algorithms: ["HS256"] }, validateUser);
         } else if (dec.header.alg == "ES512") {
-            loadOrGenerateKeypair().then((keyPair) => {
-                jwt.verify(token, keyPair.publicKey, { algorithms: ["ES512"] }, validateUser);
-            });
+            loadOrGenerateKeypair()
+                .then((keyPair) => {
+                    try {
+                        jwt.verify(token, keyPair.publicKey, { algorithms: ["ES512"] }, validateUser);
+                    } catch (verifyError: unknown) {
+                        // Если ошибка подписи, возможно токен был создан со старыми ключами
+                        const error = verifyError as Error & { name?: string };
+                        if (error?.message?.includes("invalid signature") || error?.name === "JsonWebTokenError") {
+                            logAuth("Token signature invalid - user needs to re-login");
+                            rejectAndLog(reject, 401, "Invalid Token: Please re-login. Token was signed with old keys.");
+                        } else {
+                            throw verifyError;
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error("[JWT] Error loading keypair for token verification:", error);
+                    rejectAndLog(reject, 500, "Failed to load JWT keypair");
+                });
         } else return rejectAndLog(reject, 400, "Unsupported token algorithm: " + dec.header.alg);
     });
 };
@@ -222,10 +238,32 @@ export async function loadOrGenerateKeypair() {
     let publicKey: crypto.KeyObject;
 
     if (existsSync("jwt.key") && existsSync("jwt.key.pub")) {
-        const [loadedPrivateKey, loadedPublicKey] = await Promise.all([fs.readFile("jwt.key"), fs.readFile("jwt.key.pub")]);
+        try {
+            const [loadedPrivateKey, loadedPublicKey] = await Promise.all([fs.readFile("jwt.key"), fs.readFile("jwt.key.pub")]);
 
-        privateKey = crypto.createPrivateKey(loadedPrivateKey);
-        publicKey = crypto.createPublicKey(loadedPublicKey);
+            privateKey = crypto.createPrivateKey(loadedPrivateKey);
+            publicKey = crypto.createPublicKey(loadedPublicKey);
+        } catch (error) {
+            console.warn("[JWT] Failed to load existing keypair, generating new one:", (error as Error).message);
+            // Удаляем поврежденные ключи
+            try {
+                await Promise.all([fs.unlink("jwt.key").catch(() => {}), fs.unlink("jwt.key.pub").catch(() => {})]);
+            } catch {
+                // Игнорируем ошибки при удалении файлов
+            }
+            // Генерируем новые ключи
+            console.log("[JWT] Generating new keypair:", path.resolve("jwt.key"), "- PWD:", process.cwd());
+            const res = crypto.generateKeyPairSync("ec", {
+                namedCurve: "secp521r1",
+            });
+            privateKey = res.privateKey;
+            publicKey = res.publicKey;
+
+            await Promise.all([
+                fs.writeFile("jwt.key", privateKey.export({ format: "pem", type: "sec1" })),
+                fs.writeFile("jwt.key.pub", publicKey.export({ format: "pem", type: "spki" })),
+            ]);
+        }
     } else {
         console.log("[JWT] Generating new keypair:", path.resolve("jwt.key"), "- PWD:", process.cwd());
         const res = crypto.generateKeyPairSync("ec", {

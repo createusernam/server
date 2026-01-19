@@ -22,7 +22,7 @@ import http from "http";
 import ws from "ws";
 import { Connection } from "./events/Connection";
 import { loadWebRtcLibrary, mediaServer, WRTC_PORT_MAX, WRTC_PORT_MIN, WRTC_PUBLIC_IP } from "./util/MediaServer";
-import { green, yellow } from "picocolors";
+import { green, yellow, red } from "picocolors";
 
 export class Server {
     public ws: ws.Server;
@@ -55,7 +55,15 @@ export class Server {
             server: this.server,
         });
         this.ws.on("connection", Connection);
-        this.ws.on("error", console.error);
+        this.ws.on("error", (error) => {
+            console.error("[WebRTC] WebSocket server error:", error);
+        });
+        this.server.on("error", (error) => {
+            console.error("[WebRTC] HTTP server error:", error);
+        });
+        this.server.on("upgrade", (request, socket, head) => {
+            console.log("[WebRTC] Upgrade request received:", request.url);
+        });
     }
 
     async start(): Promise<void> {
@@ -73,8 +81,19 @@ export class Server {
 
         await mediaServer.start(WRTC_PUBLIC_IP, WRTC_PORT_MIN, WRTC_PORT_MAX);
         if (!this.server.listening) {
-            this.server.listen(this.port);
-            console.log(`[WebRTC] ${green(`online on 0.0.0.0:${this.port}`)}`);
+            this.server.listen(this.port, "0.0.0.0", () => {
+                console.log(`[WebRTC] ${green(`HTTP server listening on 0.0.0.0:${this.port}`)}`);
+                console.log(`[WebRTC] WebSocket server ready for connections on ws://localhost:${this.port} and ws://127.0.0.1:${this.port}`);
+            });
+            this.server.on("error", (error: NodeJS.ErrnoException) => {
+                if (error.code === "EADDRINUSE") {
+                    console.error(`[WebRTC] ${red(`Port ${this.port} is already in use!`)}`);
+                } else {
+                    console.error(`[WebRTC] HTTP server error:`, error);
+                }
+            });
+        } else {
+            console.log(`[WebRTC] HTTP server already listening on port ${this.port}`);
         }
     }
 

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  spacebar-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spacebar-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./config.json:/spacebar/config.json:ro
+      - ./database.db:/spacebar/database.db
+      - ./files:/spacebar/files
+    environment:
+      - PORT=3001
+      - CONFIG_PATH=/spacebar/config.json
+      - DATABASE=/spacebar/database.db
+    networks:
+      - spacebar-network
+
+networks:
+  spacebar-network:
+    driver: bridge

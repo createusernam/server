@@ -89,7 +89,7 @@ router.get(
         const userSettings = await UserSettingsProtos.getOrDefault(req.user_id);
 
         res.json({
-            settings: FrecencyUserSettings.toJson(userSettings.frecencySettings!),
+            settings: userSettings.frecencySettings ? FrecencyUserSettings.toJson(userSettings.frecencySettings) : {},
         } as SettingsProtoJsonResponse);
     },
 );

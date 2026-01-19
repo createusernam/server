@@ -31,7 +31,7 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
     const startTime = Date.now();
     check.call(this, VoiceStateUpdateSchema, data.d);
     const body = data.d as VoiceStateUpdateSchema;
-    const isNew = body.channel_id === null && body.guild_id === null;
+    let isNew = false;
     let isChanged = false;
 
     let prevState;
@@ -63,6 +63,8 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
         prevState = { ...voiceState };
         voiceState.assign(body);
     } catch (error) {
+        // VoiceState не существует - это новое подключение
+        isNew = true;
         voiceState = VoiceState.create({
             ...body,
             user_id: this.user_id,
@@ -122,21 +124,32 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
             where: { id: voiceState.guild_id },
         });
         const regions = Config.get().regions;
+        console.log(`[Gateway] Regions config:`, {
+            default: regions.default,
+            available: regions.available.map((r) => ({ id: r.id, endpoint: r.endpoint })),
+        });
         let guildRegion: Region;
         if (guild && guild.region) {
             guildRegion = regions.available.filter((r) => r.id === guild.region)[0];
         } else {
             guildRegion = regions.available.filter((r) => r.id === regions.default)[0];
         }
+        console.log(`[Gateway] Selected guild region:`, { id: guildRegion.id, endpoint: guildRegion.endpoint });
+
+        // В WSL2 используем IP адрес напрямую из конфигурации
+        const endpoint = guildRegion.endpoint;
+
+        const voiceServerUpdateData = {
+            token: voiceState.token,
+            guild_id: voiceState.guild_id,
+            endpoint: endpoint,
+            channel_id: voiceState.guild_id ? undefined : voiceState.channel_id, // only DM voice calls have this set, and DM channel is one where guild_id is null
+        };
+        console.log(`[Gateway] Sending VOICE_SERVER_UPDATE to user ${voiceState.user_id}:`, voiceServerUpdateData);
 
         await emitEvent({
             event: "VOICE_SERVER_UPDATE",
-            data: {
-                token: voiceState.token,
-                guild_id: voiceState.guild_id,
-                endpoint: guildRegion.endpoint,
-                channel_id: voiceState.guild_id ? undefined : voiceState.channel_id, // only DM voice calls have this set, and DM channel is one where guild_id is null
-            },
+            data: voiceServerUpdateData,
             user_id: voiceState.user_id,
         } as VoiceServerUpdateEvent);
     }

@@ -53,6 +53,37 @@ export class Config {
 
         config = OrmUtils.mergeDeep({}, { ...new ConfigValue() }, config);
 
+        // Set default values for required config fields if they are null (for new installations)
+        if (!config.general) config.general = new ConfigValue().general;
+        if (!config.api) config.api = new ConfigValue().api;
+        if (!config.cdn) config.cdn = new ConfigValue().cdn;
+        if (!config.gateway) config.gateway = new ConfigValue().gateway;
+
+        // Принудительно обновляем endpoint региона для WSL2
+        if (config.regions && config.regions.available && config.regions.available.length > 0) {
+            const defaultRegion = config.regions.available.find((r) => r.id === config.regions.default) || config.regions.available[0];
+            if (defaultRegion && (defaultRegion.endpoint === "127.0.0.1:3004" || defaultRegion.endpoint === "localhost:3004")) {
+                console.log(`[Config] Updating region endpoint from ${defaultRegion.endpoint} to 172.29.46.139:3004 for WSL2`);
+                defaultRegion.endpoint = "172.29.46.139:3004";
+            }
+        }
+
+        if (!config.general.serverName) {
+            config.general.serverName = "http://localhost:3001";
+        }
+        if (!config.api.endpointPublic) {
+            config.api.endpointPublic = "http://localhost:3001/api/v9";
+        }
+        if (!config.cdn.endpointPublic) {
+            config.cdn.endpointPublic = "http://localhost:3001";
+        }
+        if (!config.cdn.endpointPrivate) {
+            config.cdn.endpointPrivate = "http://localhost:3001";
+        }
+        if (!config.gateway.endpointPublic) {
+            config.gateway.endpointPublic = "ws://localhost:3001";
+        }
+
         // TODO: factor this out someday
         if (process.env.CDN_SIGNATURE_PATH) config.security.cdnSignatureKey = (await fs.readFile(process.env.CDN_SIGNATURE_PATH, "utf-8")).trim();
         if (process.env.LEGACY_JWT_SECRET_PATH) config.security.jwtSecret = (await fs.readFile(process.env.LEGACY_JWT_SECRET_PATH, "utf-8")).trim();

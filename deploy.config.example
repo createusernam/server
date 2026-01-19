@@ -1,0 +1,22 @@
+# Конфигурационный файл для развертывания Spacebar Server
+# Скопируйте этот файл в deploy.config и заполните своими данными
+# cp deploy.config.example deploy.config
+# nano deploy.config
+
+# URL репозитория
+GIT_REPO="https://github.com/createusernam/server.git"
+
+# Ветка для развертывания (по умолчанию)
+DEPLOY_BRANCH="vps-spacebar-fermi-test"
+
+# Директория для развертывания
+DEPLOY_DIR="/opt/spacebar/server"
+
+# Директория для бэкапов
+BACKUP_DIR="/opt/spacebar-backups"
+
+# Имя контейнера
+CONTAINER_NAME="spacebar-server"
+
+# Имя Docker образа
+IMAGE_NAME="spacebar-server"
