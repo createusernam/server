@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   spacebar-server:
     build:
@@ -11,15 +9,13 @@ services:
       - "3001:3001"
     volumes:
       - ./config.json:/spacebar/config.json:ro
-      - ./database.db:/spacebar/database.db
+      # database.db volume удален - используется PostgreSQL
       - ./files:/spacebar/files
     environment:
       - PORT=3001
       - CONFIG_PATH=/spacebar/config.json
-      - DATABASE=/spacebar/database.db
-    networks:
-      - spacebar-network
-
-networks:
-  spacebar-network:
-    driver: bridge
+      - CONFIG_READONLY=true
+      # DATABASE должен быть установлен через переменную окружения при деплое
+      # Для PostgreSQL: postgres://user:password@host:port/database
+      # Для SQLite (не рекомендуется): /spacebar/database.db
+      # Пример: - DATABASE=postgres://spacebar:password@172.17.0.1:5432/spacebar

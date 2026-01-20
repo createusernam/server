@@ -88,7 +88,8 @@ COPY --chown=${USER_NAME}:${USER_GROUP} --from=builder /build/server "${BASEDIR}
 
 ENV PORT="3001"
 ENV CONFIG_PATH="${BASEDIR}/config.json"
-ENV DATABASE="${BASEDIR}/database.db"
+# DATABASE должен быть установлен через переменную окружения в docker-compose
+# Не устанавливаем значение по умолчанию, чтобы можно было переопределить
 
 WORKDIR "${BASEDIR}/server"
 

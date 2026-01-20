@@ -191,6 +191,61 @@ ALTER DATABASE spacebar OWNER TO spacebar;
 
 Обновите `config.json` с правильными данными для подключения к БД.
 
+### Настройка доступа PostgreSQL из Docker контейнера
+
+PostgreSQL должен разрешать подключения из Docker сети. Выполните:
+
+```bash
+# Определите IP адрес Docker bridge (обычно 172.17.0.1)
+ip addr show docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1
+
+# Отредактируйте pg_hba.conf
+sudo nano /etc/postgresql/*/main/pg_hba.conf
+```
+
+Добавьте строку в конец файла (замените `172.17.0.0/16` на вашу Docker сеть, если отличается):
+
+```
+host    all             all             172.17.0.0/16          scram-sha-256
+```
+
+Или для всех Docker сетей (более широкий диапазон):
+
+```
+host    all             all             172.16.0.0/12          scram-sha-256
+```
+
+Перезапустите PostgreSQL:
+
+```bash
+sudo systemctl restart postgresql
+```
+
+### Настройка переменной DATABASE в docker-compose.vps.yml
+
+Отредактируйте `docker-compose.vps.yml` и добавьте переменную `DATABASE`:
+
+```bash
+cd /opt/spacebar/server
+nano docker-compose.vps.yml
+```
+
+Добавьте в секцию `environment`:
+
+```yaml
+environment:
+  - PORT=3001
+  - CONFIG_PATH=/spacebar/config.json
+  - CONFIG_READONLY=true
+  - DATABASE=postgres://spacebar:your_password@172.17.0.1:5432/spacebar
+```
+
+**Важно:**
+- Замените `your_password` на реальный пароль из PostgreSQL
+- Замените `172.17.0.1` на IP Docker bridge (см. команду выше)
+- Если PostgreSQL на том же хосте, используйте `172.17.0.1` или `host.docker.internal` (на Linux может не работать)
+- Альтернатива: используйте `network_mode: "host"` в docker-compose и `localhost:5432` в DATABASE
+
 ## Шаг 5: Настройка Nginx
 
 ### Копирование конфигурации

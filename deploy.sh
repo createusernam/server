@@ -57,6 +57,7 @@ if docker ps | grep -q "$CONTAINER_NAME"; then
     BACKUP_NAME="backup-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$BACKUP_DIR/$BACKUP_NAME"
     docker cp "$CONTAINER_NAME:/spacebar/config.json" "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
+    # database.db бэкап только для SQLite (не используется с PostgreSQL)
     docker cp "$CONTAINER_NAME:/spacebar/database.db" "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
 fi
 
