@@ -14,7 +14,7 @@ if [ -f "deploy.config" ]; then
     source deploy.config
 fi
 
-# Параметры по умолчанию
+# Параметры  по умолчанию
 BRANCH="${1:-${DEPLOY_BRANCH:-vps-spacebar-fermi-test}}"
 GIT_REPO="${GIT_REPO:-https://github.com/createusernam/server.git}"
 REPO_DIR="/opt/spacebar"
