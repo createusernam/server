@@ -61,11 +61,20 @@ if docker ps | grep -q "$CONTAINER_NAME"; then
     docker cp "$CONTAINER_NAME:/spacebar/database.db" "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
 fi
 
-# Сохраняем DATABASE из текущего docker-compose.vps.yml (если есть)
+# Сохраняем DATABASE из текущего docker-compose.vps.yml или .env (если есть)
+SAVED_DATABASE=""
 if [ -f "docker-compose.vps.yml" ]; then
     EXISTING_DATABASE=$(grep -E "^\s+- DATABASE=" docker-compose.vps.yml | head -1 | sed 's/.*DATABASE=//' | sed 's/#.*//' | xargs)
     if [ -n "$EXISTING_DATABASE" ]; then
         echo "💾 Сохраняем DATABASE из текущего docker-compose.vps.yml..."
+        SAVED_DATABASE="$EXISTING_DATABASE"
+    fi
+fi
+# Проверяем .env файл
+if [ -z "$SAVED_DATABASE" ] && [ -f ".env" ]; then
+    EXISTING_DATABASE=$(grep "^DATABASE=" .env | head -1 | sed 's/^DATABASE=//' | xargs)
+    if [ -n "$EXISTING_DATABASE" ]; then
+        echo "💾 Сохраняем DATABASE из .env файла..."
         SAVED_DATABASE="$EXISTING_DATABASE"
     fi
 fi
@@ -76,12 +85,17 @@ docker-compose -f docker-compose.vps.yml down || true
 docker stop "$CONTAINER_NAME" 2>/dev/null || true
 docker rm "$CONTAINER_NAME" 2>/dev/null || true
 
-# Восстанавливаем DATABASE в docker-compose.vps.yml (если был сохранен)
-if [ -n "$SAVED_DATABASE" ] && [ -f "docker-compose.vps.yml" ]; then
-    echo "💾 Восстанавливаем DATABASE в docker-compose.vps.yml..."
-    # Ищем строку с комментарием DATABASE и добавляем после неё
-    if ! grep -q "^\s+- DATABASE=" docker-compose.vps.yml; then
+# Восстанавливаем DATABASE в .env файле (приоритет) или docker-compose.vps.yml
+if [ -n "$SAVED_DATABASE" ]; then
+    echo "💾 Восстанавливаем DATABASE..."
+    # Сначала пытаемся в .env (если используется env_file)
+    if [ -f "docker-compose.vps.yml" ] && grep -q "env_file:" docker-compose.vps.yml; then
+        echo "DATABASE=$SAVED_DATABASE" > .env
+        echo "✅ DATABASE восстановлена в .env файле"
+    # Иначе добавляем в docker-compose.vps.yml
+    elif [ -f "docker-compose.vps.yml" ] && ! grep -q "^\s+- DATABASE=" docker-compose.vps.yml; then
         sed -i "/# Пример: - DATABASE=/a\      - DATABASE=$SAVED_DATABASE" docker-compose.vps.yml
+        echo "✅ DATABASE восстановлена в docker-compose.vps.yml"
     fi
 fi
 
