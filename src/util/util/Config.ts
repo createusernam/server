@@ -81,7 +81,8 @@ export class Config {
             config.cdn.endpointPrivate = "http://localhost:3001";
         }
         if (!config.gateway.endpointPublic) {
-            config.gateway.endpointPublic = "ws://localhost:3001";
+            // Most reverse-proxy deployments expose the gateway at /gateway (see nginx examples)
+            config.gateway.endpointPublic = "ws://localhost:3001/gateway";
         }
 
         // TODO: factor this out someday

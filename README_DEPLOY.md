@@ -142,7 +142,7 @@ nano /opt/spacebar/server/config.json
     }
   },
   "gateway": {
-    "endpointPublic": "wss://storytable.ru"
+    "endpointPublic": "wss://storytable.ru/gateway"
   },
   "security": {
     "jwtSecret": "generate_random_secret_here",
