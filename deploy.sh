@@ -61,11 +61,29 @@ if docker ps | grep -q "$CONTAINER_NAME"; then
     docker cp "$CONTAINER_NAME:/spacebar/database.db" "$BACKUP_DIR/$BACKUP_NAME/" 2>/dev/null || true
 fi
 
+# Сохраняем DATABASE из текущего docker-compose.vps.yml (если есть)
+if [ -f "docker-compose.vps.yml" ]; then
+    EXISTING_DATABASE=$(grep -E "^\s+- DATABASE=" docker-compose.vps.yml | head -1 | sed 's/.*DATABASE=//' | sed 's/#.*//' | xargs)
+    if [ -n "$EXISTING_DATABASE" ]; then
+        echo "💾 Сохраняем DATABASE из текущего docker-compose.vps.yml..."
+        SAVED_DATABASE="$EXISTING_DATABASE"
+    fi
+fi
+
 # Останавливаем старые контейнеры
 echo "🛑 Останавливаем старые контейнеры..."
 docker-compose -f docker-compose.vps.yml down || true
 docker stop "$CONTAINER_NAME" 2>/dev/null || true
 docker rm "$CONTAINER_NAME" 2>/dev/null || true
+
+# Восстанавливаем DATABASE в docker-compose.vps.yml (если был сохранен)
+if [ -n "$SAVED_DATABASE" ] && [ -f "docker-compose.vps.yml" ]; then
+    echo "💾 Восстанавливаем DATABASE в docker-compose.vps.yml..."
+    # Ищем строку с комментарием DATABASE и добавляем после неё
+    if ! grep -q "^\s+- DATABASE=" docker-compose.vps.yml; then
+        sed -i "/# Пример: - DATABASE=/a\      - DATABASE=$SAVED_DATABASE" docker-compose.vps.yml
+    fi
+fi
 
 # Собираем новый образ
 echo "🔨 Собираем Docker образ..."

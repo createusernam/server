@@ -12,6 +12,8 @@ services:
       - ./config.json:/spacebar/config.json:ro
       # database.db volume удален - используется PostgreSQL
       - ./files:/spacebar/files
+    env_file:
+      - .env  # DATABASE и другие секреты (не коммитится в git)
     environment:
       - PORT=3001
       - CONFIG_PATH=/spacebar/config.json
