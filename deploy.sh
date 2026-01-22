@@ -88,6 +88,15 @@ docker rm "$CONTAINER_NAME" 2>/dev/null || true
 # Восстанавливаем DATABASE в .env файле (приоритет) или docker-compose.vps.yml
 if [ -n "$SAVED_DATABASE" ]; then
     echo "💾 Восстанавливаем DATABASE..."
+    
+    # Автоматически заменяем localhost на 172.17.0.1 для подключения из Docker контейнера
+    # (на Ubuntu нет host.docker.internal, поэтому используем IP Docker bridge)
+    FIXED_DATABASE=$(echo "$SAVED_DATABASE" | sed 's|@localhost:5432|@172.17.0.1:5432|g')
+    if [ "$SAVED_DATABASE" != "$FIXED_DATABASE" ]; then
+        echo "🔧 Исправляем адрес подключения: localhost -> 172.17.0.1"
+        SAVED_DATABASE="$FIXED_DATABASE"
+    fi
+    
     # Сначала пытаемся в .env (если используется env_file)
     if [ -f "docker-compose.vps.yml" ] && grep -q "env_file:" docker-compose.vps.yml; then
         echo "DATABASE=$SAVED_DATABASE" > .env
