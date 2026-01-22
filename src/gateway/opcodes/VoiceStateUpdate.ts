@@ -136,7 +136,7 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
         }
         console.log(`[Gateway] Selected guild region:`, { id: guildRegion.id, endpoint: guildRegion.endpoint });
 
-        // В WSL2 используем IP адрес напрямую из конфигурации
+        // Используем endpoint из конфигурации региона
         const endpoint = guildRegion.endpoint;
 
         const voiceServerUpdateData = {

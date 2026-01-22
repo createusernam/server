@@ -59,14 +59,15 @@ export class Config {
         if (!config.cdn) config.cdn = new ConfigValue().cdn;
         if (!config.gateway) config.gateway = new ConfigValue().gateway;
 
-        // Принудительно обновляем endpoint региона для WSL2
-        if (config.regions && config.regions.available && config.regions.available.length > 0) {
-            const defaultRegion = config.regions.available.find((r) => r.id === config.regions.default) || config.regions.available[0];
-            if (defaultRegion && (defaultRegion.endpoint === "127.0.0.1:3004" || defaultRegion.endpoint === "localhost:3004")) {
-                console.log(`[Config] Updating region endpoint from ${defaultRegion.endpoint} to 172.29.46.139:3004 for WSL2`);
-                defaultRegion.endpoint = "172.29.46.139:3004";
-            }
-        }
+        // Принудительно обновляем endpoint региона для WSL2 (только для локальной разработки)
+        // На VPS это не нужно - endpoint должен быть настроен в config.json
+        // if (config.regions && config.regions.available && config.regions.available.length > 0) {
+        //     const defaultRegion = config.regions.available.find((r) => r.id === config.regions.default) || config.regions.available[0];
+        //     if (defaultRegion && (defaultRegion.endpoint === "127.0.0.1:3004" || defaultRegion.endpoint === "localhost:3004")) {
+        //         console.log(`[Config] Updating region endpoint from ${defaultRegion.endpoint} to 172.29.46.139:3004 for WSL2`);
+        //         defaultRegion.endpoint = "172.29.46.139:3004";
+        //     }
+        // }
 
         if (!config.general.serverName) {
             config.general.serverName = "http://localhost:3001";
