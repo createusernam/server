@@ -5,9 +5,10 @@ services:
       dockerfile: Dockerfile
     container_name: spacebar-server
     restart: unless-stopped
-    ports:
-      - "3001:3001"
-      - "3004:3004"  # WebRTC voice server
+    network_mode: "host"  # Используем сеть хоста для подключения к PostgreSQL
+    # ports:  # Не нужны с network_mode: "host"
+    #   - "3001:3001"
+    #   - "3004:3004"  # WebRTC voice server
     volumes:
       - ./config.json:/spacebar/config.json:ro
       # database.db volume удален - используется PostgreSQL
@@ -23,5 +24,5 @@ services:
       # DATABASE должен быть установлен через переменную окружения при деплое
       # Для PostgreSQL: postgres://user:password@host:port/database
       # Для SQLite (не рекомендуется):  /spacebar/database.db
-      # ВАЖНО: Используйте 172.17.0.1 (Docker bridge IP) вместо localhost для подключения из контейнера
-      # Пример: - DATABASE=postgres://spacebar:password@172.17.0.1:5432/spacebar
+      # ВАЖНО: С network_mode: "host" используйте localhost для подключения к PostgreSQL
+      # Пример: - DATABASE=postgres://spacebar:password@localhost:5432/spacebar
