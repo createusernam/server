@@ -99,8 +99,23 @@ if [ -n "$SAVED_DATABASE" ]; then
     
     # Сначала пытаемся в .env (если используется env_file)
     if [ -f "docker-compose.vps.yml" ] && grep -q "env_file:" docker-compose.vps.yml; then
-        echo "DATABASE=$SAVED_DATABASE" > .env
-        echo "✅ DATABASE восстановлена в .env файле"
+        # Если .env уже существует и содержит DATABASE с правильным адресом (172.17.0.1), не перезаписываем
+        if [ -f ".env" ] && grep -q "DATABASE=" .env && grep -q "@172.17.0.1:5432" .env; then
+            echo "✅ .env уже содержит DATABASE с правильным адресом, оставляем как есть"
+        else
+            # Обновляем или создаем .env
+            if [ -f ".env" ]; then
+                # Обновляем только строку DATABASE, сохраняя остальные переменные
+                if grep -q "^DATABASE=" .env; then
+                    sed -i "s|^DATABASE=.*|DATABASE=$SAVED_DATABASE|" .env
+                else
+                    echo "DATABASE=$SAVED_DATABASE" >> .env
+                fi
+            else
+                echo "DATABASE=$SAVED_DATABASE" > .env
+            fi
+            echo "✅ DATABASE восстановлена в .env файле"
+        fi
     # Иначе добавляем в docker-compose.vps.yml
     elif [ -f "docker-compose.vps.yml" ] && ! grep -q "^\s+- DATABASE=" docker-compose.vps.yml; then
         sed -i "/# Пример: - DATABASE=/a\      - DATABASE=$SAVED_DATABASE" docker-compose.vps.yml

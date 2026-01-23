@@ -25,7 +25,7 @@ export class RegionConfiguration {
         {
             id: "spacebar",
             name: "spacebar",
-            endpoint: "172.29.46.139:3004",
+            endpoint: "storytable.ru/webrtc",
             vip: false,
             custom: false,
             deprecated: false,
