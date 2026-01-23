@@ -21,6 +21,8 @@ services:
       - CONFIG_READONLY=true
       - WRTC_LIBRARY=@spacebarchat/medooze-webrtc
       - WRTC_WS_PORT=3004
+      # WRTC_PUBLIC_IP должен быть установлен через .env файл (не коммитится в git)
+      # Пример: WRTC_PUBLIC_IP=storytable.ru или WRTC_PUBLIC_IP=<PUBLIC_IP>
       # DATABASE должен быть установлен через переменную окружения при деплое
       # Для PostgreSQL: postgres://user:password@host:port/database
       # Для SQLite (не рекомендуется):  /spacebar/database.db
