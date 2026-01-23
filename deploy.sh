@@ -38,13 +38,15 @@ if [ ! -d "$SERVER_DIR/.git" ]; then
     # Перемещаем файлы
     mv server-temp/* server-temp/.git "$SERVER_DIR/" 2>/dev/null || true
     rm -rf server-temp
-else
-    echo "📥 Обновляем репозиторий..."
-    cd "$SERVER_DIR"
-    git fetch origin
 fi
 
 cd "$SERVER_DIR"
+
+# Обновляем репозиторий (код приложения)
+# Примечание: сам deploy.sh не обновится, если уже запущен.
+# Для обновления deploy.sh выполните: git fetch origin && git pull origin $BRANCH
+echo "📥 Обновляем репозиторий..."
+git fetch origin
 
 # Переключаемся на нужную ветку
 echo "🔀 Переключаемся на ветку $BRANCH..."
@@ -123,9 +125,9 @@ if [ -n "$SAVED_DATABASE" ]; then
     fi
 fi
 
-# Собираем новый образ
+# Собираем новый образ через docker-compose (без кэша для гарантии актуального кода)
 echo "🔨 Собираем Docker образ..."
-docker build -t "${IMAGE_NAME}:latest" .
+docker-compose -f docker-compose.vps.yml build --no-cache
 
 # Запускаем контейнер
 echo "▶️  Запускаем контейнер..."
