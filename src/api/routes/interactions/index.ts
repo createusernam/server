@@ -19,6 +19,7 @@
 import { randomBytes } from "crypto";
 import { InteractionSchema } from "@spacebar/schemas";
 import { route } from "@spacebar/api";
+import { HTTPError } from "lambert-server";
 import { Request, Response, Router } from "express";
 import { Config, emitEvent, getPermission, Guild, InteractionCreateEvent, InteractionFailureEvent, InteractionType, Member, Message, Snowflake, User } from "@spacebar/util";
 import { pendingInteractions } from "@spacebar/util/imports/Interactions";
@@ -69,7 +70,20 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         interactionData.app_permissions = (await getPermission(body.application_id, body.guild_id, body.channel_id)).bitfield.toString();
 
         const guild = await Guild.findOneOrFail({ where: { id: body.guild_id } });
-        const member = await Member.findOneOrFail({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
+        let member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
+        if (!member) {
+            if (guild.owner_id === req.user_id) {
+                try {
+                    await Member.addToGuild(req.user_id, body.guild_id);
+                } catch {
+                    // Ignore "already a member" (race), will re-fetch below
+                }
+                member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
+            }
+            if (!member) {
+                throw new HTTPError("Member could not be found", 404);
+            }
+        }
 
         interactionData.guild = {
             id: guild.id,
