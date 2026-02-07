@@ -23,6 +23,7 @@ moduleAlias(__dirname + "../../../package.json");
 import "reflect-metadata";
 import cluster, { Worker } from "cluster";
 import os from "os";
+import { loadOrGenerateKeypair } from "@spacebar/util/util/Token";
 import { red, bold, yellow, cyan, blueBright, redBright } from "picocolors";
 import { initStats } from "./stats";
 import { config } from "dotenv";
@@ -62,7 +63,7 @@ function getRevInfoOrFail(): { rev: string | null; lastModified: number } {
 
 if (cluster.isPrimary) {
     const revInfo = getRevInfoOrFail();
-    Logo.printLogo().then(() => {
+    Logo.printLogo().then(async () => {
         const unformatted = `spacebar-server | !! Pre-release build !!`;
         const formatted = `${blueBright("spacebar-server")} | ${redBright("⚠️ Pre-release build ⚠️")}`;
         console.log(bold(centerString(unformatted, 86).replace(unformatted, formatted)));
@@ -90,6 +91,15 @@ if (cluster.isPrimary) {
             require("./Server");
         } else {
             process.env.EVENT_TRANSMISSION = "process";
+
+            // Pre-generate JWT keypair in primary BEFORE forking workers to avoid race condition:
+            // workers may call loadOrGenerateKeypair() concurrently at startup; if files don't exist,
+            // each could generate different keys → token signed by worker A fails verification on worker B.
+            const pregen = loadOrGenerateKeypair();
+            pregen
+                .then((kp) => console.log(`[Process] JWT keypair pre-generated (fingerprint=${kp.fingerprint})`))
+                .catch((err) => console.error("[Process] JWT keypair pre-generation failed:", err));
+            await pregen;
 
             // Fork workers.
             for (let i = 0; i < cores; i++) {

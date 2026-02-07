@@ -52,6 +52,12 @@ function logAuth(text: string) {
     console.log(`[AUTH] ${text}`);
 }
 
+function logKeypairFingerprint(operation: string, fingerprint: string) {
+    if (process.env.LOG_JWT_KEYPAIR !== "true") return;
+    const workerId = process.env.NODE_APP_INSTANCE ?? process.pid;
+    console.log(`[JWT] ${operation} keypair fingerprint=${fingerprint} worker=${workerId}`);
+}
+
 function rejectAndLog(rejectFunction: (reason?: unknown) => void, httpCode: number | undefined, reason: string) {
     console.error(reason);
     rejectFunction(new HTTPError(reason, httpCode ?? 400));
@@ -154,6 +160,7 @@ export const checkToken = (
         } else if (dec.header.alg == "ES512") {
             loadOrGenerateKeypair()
                 .then((keyPair) => {
+                    logKeypairFingerprint("checkToken using", keyPair.fingerprint);
                     try {
                         jwt.verify(token, keyPair.publicKey, { algorithms: ["ES512"] }, validateUser);
                     } catch (verifyError: unknown) {
@@ -178,6 +185,7 @@ export const checkToken = (
 export async function generateToken(id: string, isAdminSession: boolean = false): Promise<string | undefined> {
     const iat = Math.floor(Date.now() / 1000);
     const keyPair = await loadOrGenerateKeypair();
+    logKeypairFingerprint("generateToken using", keyPair.fingerprint);
 
     let newSession;
     do {
@@ -235,6 +243,7 @@ export async function loadOrGenerateKeypair() {
             lastFsCheck = Date.now();
         }
 
+        logKeypairFingerprint("using cached", cachedKeypair.fingerprint);
         return cachedKeypair;
     }
 
@@ -291,5 +300,7 @@ export async function loadOrGenerateKeypair() {
         .digest("hex");
 
     lastFsCheck = Date.now();
-    return (cachedKeypair = { privateKey, publicKey, fingerprint });
+    cachedKeypair = { privateKey, publicKey, fingerprint };
+    logKeypairFingerprint(loadedFromFile ? "loaded from file" : "generated new", fingerprint);
+    return cachedKeypair;
 }

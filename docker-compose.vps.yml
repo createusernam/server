@@ -13,11 +13,14 @@ services:
       - ./config.json:/spacebar/config.json:ro
       # database.db volume удален - используется PostgreSQL
       - ./files:/spacebar/files
-      # JWT keypair persistence across restarts (create jwt-keys dir on host before first up)
+      # JWT keypair persistence across restarts. Create jwt-keys dir on host before first up;
+      # ensure writable by container user (chown 1000:1000 ./jwt-keys if needed)
       - ./jwt-keys:/spacebar/server/jwt-keys
     env_file:
       - .env  # DATABASE и другие секреты (не коммитится в git)
     environment:
+      # THREADS=1 — workaround if 401 invalid signature persists (single worker, no JWT keypair race)
+      # - THREADS=1
       - PORT=3001
       - CONFIG_PATH=/spacebar/config.json
       - JWT_KEY_DIR=jwt-keys

@@ -29,6 +29,7 @@ const router = Router({ mergeParams: true });
 
 router.post("/", route({}), async (req: Request, res: Response) => {
     const body = req.body as InteractionSchema;
+    console.log("[interactions] request body.guild_id=%s body.channel_id=%s req.user_id=%s", body.guild_id, body.channel_id, req.user_id);
 
     const interactionId = Snowflake.generate();
     const interactionToken = randomBytes(24).toString("base64url");
@@ -85,6 +86,7 @@ router.post("/", route({}), async (req: Request, res: Response) => {
             }
             member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
             if (!member) {
+                console.warn("[interactions] 404: member still null after addToGuild guild_id=%s user_id=%s", body.guild_id, req.user_id);
                 throw new HTTPError("Member could not be found", 404);
             }
         }

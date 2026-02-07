@@ -33,6 +33,6 @@ export class RegisterConfiguration {
     blockAsns: string[] = [""];
     blockAbuseIpDbAboveScore: number = 75; // 0 to disable
     incrementingDiscriminators: boolean = false; // random otherwise
-    defaultRights: string = "875069521787904"; // See `npm run generate:rights`
+    defaultRights: string = "875069538126288"; // Includes CREATE_GUILDS (bit 14). See `npm run generate:rights`
     checkIp: boolean = true;
 }
