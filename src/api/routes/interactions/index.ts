@@ -72,14 +72,18 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         const guild = await Guild.findOneOrFail({ where: { id: body.guild_id } });
         let member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
         if (!member) {
-            if (guild.owner_id === req.user_id) {
-                try {
-                    await Member.addToGuild(req.user_id, body.guild_id);
-                } catch {
-                    // Ignore "already a member" (race), will re-fetch below
+            console.log(`[interactions] Member not found for guild_id=${body.guild_id} user_id=${req.user_id}, attempting addToGuild`);
+            try {
+                await Member.addToGuild(req.user_id, body.guild_id);
+            } catch (err) {
+                const isAlreadyMember = err instanceof HTTPError && err.message?.includes("already a member");
+                if (isAlreadyMember) {
+                    // Race or inconsistent state; re-fetch below
+                } else {
+                    console.warn(`[interactions] addToGuild failed guild_id=${body.guild_id} user_id=${req.user_id}`, err);
                 }
-                member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
             }
+            member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
             if (!member) {
                 throw new HTTPError("Member could not be found", 404);
             }
