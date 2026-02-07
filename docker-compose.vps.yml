@@ -13,11 +13,14 @@ services:
       - ./config.json:/spacebar/config.json:ro
       # database.db volume удален - используется PostgreSQL
       - ./files:/spacebar/files
+      # JWT keypair persistence across restarts (create jwt-keys dir on host before first up)
+      - ./jwt-keys:/spacebar/server/jwt-keys
     env_file:
       - .env  # DATABASE и другие секреты (не коммитится в git)
     environment:
       - PORT=3001
       - CONFIG_PATH=/spacebar/config.json
+      - JWT_KEY_DIR=jwt-keys
       - CONFIG_READONLY=true
       - WRTC_LIBRARY=@spacebarchat/medooze-webrtc
       - WRTC_WS_PORT=3004

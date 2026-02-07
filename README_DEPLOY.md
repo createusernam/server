@@ -246,6 +246,25 @@ environment:
 - Если PostgreSQL на том же хосте, используйте `172.17.0.1` или `host.docker.internal` (на Linux может не работать)
 - Альтернатива: используйте `network_mode: "host"` в docker-compose и `localhost:5432` в DATABASE
 
+### JWT keypair (persistence между перезапусками)
+
+Чтобы токены пользователей не становились невалидными после каждого `docker-compose up -d`, ключи JWT должны храниться в volume. Перед первым запуском создайте каталог на хосте:
+
+```bash
+cd /opt/spacebar/server
+mkdir -p jwt-keys
+```
+
+При первом `up -d` сервер сгенерирует в нём `jwt.key` и `jwt.key.pub`; при следующих перезапусках ключи подхватятся из volume. Рекомендуется сделать бэкап каталога `jwt-keys/`.
+
+Проверка в логах после старта контейнера:
+- `[JWT] Keypair loaded from file` — ключи загружены из volume, старые токены работают.
+- `[JWT] Keypair generated (new); tokens from previous runs will be invalid until users re-login.` — ключи новые, пользователям нужно перелогиниться.
+
+```bash
+docker-compose -f docker-compose.vps.yml logs spacebar-server 2>&1 | head -80
+```
+
 ## Шаг 5: Настройка Nginx
 
 ### Копирование конфигурации

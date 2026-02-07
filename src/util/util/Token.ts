@@ -218,14 +218,18 @@ let cachedKeypair: {
 
 // Get ECDSA keypair from file or generate it
 export async function loadOrGenerateKeypair() {
+    const keyDir = process.env.JWT_KEY_DIR || ".";
+    const keyPath = path.join(keyDir, "jwt.key");
+    const keyPubPath = path.join(keyDir, "jwt.key.pub");
+
     if (cachedKeypair) {
         // check for file deletion every minute
         if (Date.now() - lastFsCheck > 60000) {
-            if (!existsSync("jwt.key") || !existsSync("jwt.key.pub")) {
+            if (!existsSync(keyPath) || !existsSync(keyPubPath)) {
                 console.log("[JWT] Keypair files disappeared... Saving them again.");
                 await Promise.all([
-                    fs.writeFile("jwt.key", cachedKeypair.privateKey.export({ format: "pem", type: "sec1" })),
-                    fs.writeFile("jwt.key.pub", cachedKeypair.publicKey.export({ format: "pem", type: "spki" })),
+                    fs.writeFile(keyPath, cachedKeypair.privateKey.export({ format: "pem", type: "sec1" })),
+                    fs.writeFile(keyPubPath, cachedKeypair.publicKey.export({ format: "pem", type: "spki" })),
                 ]);
             }
             lastFsCheck = Date.now();
@@ -236,23 +240,23 @@ export async function loadOrGenerateKeypair() {
 
     let privateKey: crypto.KeyObject;
     let publicKey: crypto.KeyObject;
+    let loadedFromFile = false;
 
-    if (existsSync("jwt.key") && existsSync("jwt.key.pub")) {
+    if (existsSync(keyPath) && existsSync(keyPubPath)) {
         try {
-            const [loadedPrivateKey, loadedPublicKey] = await Promise.all([fs.readFile("jwt.key"), fs.readFile("jwt.key.pub")]);
+            const [loadedPrivateKey, loadedPublicKey] = await Promise.all([fs.readFile(keyPath), fs.readFile(keyPubPath)]);
 
             privateKey = crypto.createPrivateKey(loadedPrivateKey);
             publicKey = crypto.createPublicKey(loadedPublicKey);
+            loadedFromFile = true;
         } catch (error) {
             console.warn("[JWT] Failed to load existing keypair, generating new one:", (error as Error).message);
-            // Удаляем поврежденные ключи
             try {
-                await Promise.all([fs.unlink("jwt.key").catch(() => {}), fs.unlink("jwt.key.pub").catch(() => {})]);
+                await Promise.all([fs.unlink(keyPath).catch(() => {}), fs.unlink(keyPubPath).catch(() => {})]);
             } catch {
-                // Игнорируем ошибки при удалении файлов
+                // ignore
             }
-            // Генерируем новые ключи
-            console.log("[JWT] Generating new keypair:", path.resolve("jwt.key"), "- PWD:", process.cwd());
+            console.log("[JWT] Generating new keypair:", path.resolve(keyPath), "- PWD:", process.cwd());
             const res = crypto.generateKeyPairSync("ec", {
                 namedCurve: "secp521r1",
             });
@@ -260,22 +264,25 @@ export async function loadOrGenerateKeypair() {
             publicKey = res.publicKey;
 
             await Promise.all([
-                fs.writeFile("jwt.key", privateKey.export({ format: "pem", type: "sec1" })),
-                fs.writeFile("jwt.key.pub", publicKey.export({ format: "pem", type: "spki" })),
+                fs.writeFile(keyPath, privateKey.export({ format: "pem", type: "sec1" })),
+                fs.writeFile(keyPubPath, publicKey.export({ format: "pem", type: "spki" })),
             ]);
+            console.log("[JWT] Keypair generated (new); tokens from previous runs will be invalid until users re-login.");
         }
     } else {
-        console.log("[JWT] Generating new keypair:", path.resolve("jwt.key"), "- PWD:", process.cwd());
+        console.log("[JWT] Generating new keypair:", path.resolve(keyPath), "- PWD:", process.cwd());
         const res = crypto.generateKeyPairSync("ec", {
             namedCurve: "secp521r1",
         });
         privateKey = res.privateKey;
         publicKey = res.publicKey;
 
-        await Promise.all([
-            fs.writeFile("jwt.key", privateKey.export({ format: "pem", type: "sec1" })),
-            fs.writeFile("jwt.key.pub", publicKey.export({ format: "pem", type: "spki" })),
-        ]);
+        await Promise.all([fs.writeFile(keyPath, privateKey.export({ format: "pem", type: "sec1" })), fs.writeFile(keyPubPath, publicKey.export({ format: "pem", type: "spki" }))]);
+        console.log("[JWT] Keypair generated (new); tokens from previous runs will be invalid until users re-login.");
+    }
+
+    if (loadedFromFile) {
+        console.log("[JWT] Keypair loaded from file");
     }
 
     const fingerprint = crypto
