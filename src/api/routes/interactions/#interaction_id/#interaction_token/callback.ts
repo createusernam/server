@@ -69,9 +69,10 @@ router.post("/", route({}), async (req: Request, res: Response) => {
     }
 
     const interactionId = req.params.interaction_id;
-    const interaction = pendingInteractions.get(req.params.interaction_id);
+    const interaction = pendingInteractions.get(interactionId);
 
     if (!interaction) {
+        res.status(404).json({ message: "Interaction not found or expired" });
         return;
     }
 

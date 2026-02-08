@@ -162,12 +162,6 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         interactionData.message = await Message.findOneOrFail({ where: { id: body.message_id, flags: undefined }, relations: { author: true } });
     }
 
-    emitEvent({
-        event: "INTERACTION_CREATE",
-        user_id: body.application_id,
-        data: interactionData,
-    } as InteractionCreateEvent);
-
     const interactionTimeout = setTimeout(() => {
         emitEvent({
             event: "INTERACTION_FAILURE",
@@ -191,6 +185,12 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         commandType: body.data.type,
         commandName: body.data.name,
     });
+
+    emitEvent({
+        event: "INTERACTION_CREATE",
+        user_id: body.application_id,
+        data: interactionData,
+    } as InteractionCreateEvent);
 
     res.sendStatus(204);
 });
