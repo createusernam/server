@@ -88,10 +88,12 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         const guild = await Guild.findOneOrFail({ where: { id: guildId } });
         // Same pattern as room-context and GET guilds/:id: findOne without relations (relations can make TypeORM return null when the row exists)
         let member = await Member.findOne({ where: { guild_id: guildId, id: userId } });
+        let memberCreatedByAddToGuild = false;
         if (!member) {
             console.log(`[interactions] Member not found for guild_id=${guildId} user_id=${userId}, attempting addToGuild`);
             try {
                 await Member.addToGuild(userId, guildId);
+                memberCreatedByAddToGuild = true;
             } catch (err) {
                 const isAlreadyMember = err instanceof HTTPError && err.message?.includes("already a member");
                 if (isAlreadyMember) {
@@ -101,6 +103,9 @@ router.post("/", route({}), async (req: Request, res: Response) => {
                 }
             }
             member = await Member.findOne({ where: { guild_id: guildId, id: userId } });
+            if (member && memberCreatedByAddToGuild) {
+                console.log(`[interactions] Member created via addToGuild guild_id=${guildId} user_id=${userId}`);
+            }
             if (!member) {
                 const db = getDatabase();
                 let rawRows = -1;

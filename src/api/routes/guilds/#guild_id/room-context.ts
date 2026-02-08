@@ -17,8 +17,8 @@
 */
 
 import { route } from "@spacebar/api";
-import { Attachment, Channel, Config, getPermission, getUrlSignature, Member, Message, NewUrlSignatureData, User } from "@spacebar/util";
-import { isTextChannel, MessageCreateSchema, Reaction } from "@spacebar/schemas";
+import { Attachment, Channel, Config, getPermission, getUrlSignature, Guild, Member, Message, NewUrlSignatureData, User } from "@spacebar/util";
+import { isTextChannel, Reaction } from "@spacebar/schemas";
 import { Request, Response, Router } from "express";
 import { HTTPError } from "lambert-server";
 
@@ -26,12 +26,16 @@ const router = Router({ mergeParams: true });
 
 const ROOM_CONTEXT_MESSAGES_LIMIT = 25;
 
+function logRoomContextTiming(phase: string, ms: number) {
+    console.log(`[room-context] ${phase}: ${ms}ms`);
+}
+
 /**
  * GET /guilds/:guild_id/room-context
  * Returns guild channels and the first page of messages for the active channel in one request.
  * Query: channel_id (optional) — preferred channel for messages; must be in guild, text, and user must have VIEW_CHANNEL + READ_MESSAGE_HISTORY.
  * Response: { channels, active_channel_id, messages }
- * Message serialization is kept in sync with GET channels/:channel_id/messages.
+ * Message serialization is kept in sync with GET channels/:channel_id/messages (room-context uses lighter message relations for performance).
  */
 router.get(
     "/",
@@ -50,18 +54,41 @@ router.get(
         },
     }),
     async (req: Request, res: Response) => {
+        const t0 = Date.now();
         const { guild_id } = req.params;
         const requestedChannelId = req.query.channel_id ? `${req.query.channel_id}` : undefined;
 
-        const member = await Member.findOne({ where: { guild_id, id: req.user_id } });
+        let member = await Member.findOne({ where: { guild_id, id: req.user_id } });
+        if (!member) {
+            // Preemptive Member creation: ensure user is a member when loading room so /roll etc. do not 404 later.
+            console.log("[room-context] Member not found for guild_id=%s user_id=%s, attempting addToGuild", guild_id, req.user_id);
+            try {
+                await Member.addToGuild(String(req.user_id), guild_id);
+                member = await Member.findOne({ where: { guild_id, id: req.user_id } });
+                if (member) console.log("[room-context] Member created for guild_id=%s user_id=%s", guild_id, req.user_id);
+            } catch (err) {
+                const isAlreadyMember = err instanceof HTTPError && err.message?.includes("already a member");
+                if (isAlreadyMember) member = await Member.findOne({ where: { guild_id, id: req.user_id } });
+                else console.warn("[room-context] addToGuild failed", guild_id, req.user_id, err);
+            }
+        }
         if (!member) throw new HTTPError("You are not a member of the guild you are trying to access", 401);
+        logRoomContextTiming("member_lookup", Date.now() - t0);
 
+        const tChannels = Date.now();
         // 1. Load channels (same logic as GET guilds/:guild_id/channels)
         const channels = await Channel.find({ where: { guild_id } });
-        for await (const ch of channels) {
-            ch.position = await Channel.calculatePosition(ch.id, guild_id, ch.guild);
-        }
+        logRoomContextTiming("channel_load", Date.now() - tChannels);
+
+        const tPos = Date.now();
+        const guild = await Guild.findOneOrFail({ where: { id: guild_id }, select: { channel_ordering: true } });
+        await Promise.all(
+            channels.map(async (ch) => {
+                ch.position = await Channel.calculatePosition(ch.id, guild_id, guild);
+            }),
+        );
         channels.sort((a, b) => a.position - b.position);
+        logRoomContextTiming("calculatePosition", Date.now() - tPos);
 
         // 2. Determine active channel for messages: requested (if valid) or first text channel
         const textChannels = channels.filter((c) => isTextChannel(c.type));
@@ -80,7 +107,7 @@ router.get(
             activeChannelId = textChannels[0].id;
         }
 
-        // 3. Load messages for active channel (same format as GET channels/:channel_id/messages, limit 25)
+        // 3. Load messages for active channel (lighter relations for room-context: author, content, timestamp only; client uses these for list view)
         let messages: unknown[] = [];
         if (activeChannelId) {
             const channel = await Channel.findOneOrFail({
@@ -90,32 +117,16 @@ router.get(
             const permissions = await getPermission(req.user_id, channel.guild_id, activeChannelId);
             permissions.hasThrow("VIEW_CHANNEL");
             if (permissions.has("READ_MESSAGE_HISTORY")) {
+                const tMsgLoad = Date.now();
                 const messagesList = await Message.find({
                     order: { timestamp: "DESC" },
                     take: ROOM_CONTEXT_MESSAGES_LIMIT,
                     where: { channel_id: activeChannelId },
-                    relations: {
-                        author: true,
-                        webhook: true,
-                        application: true,
-                        mentions: true,
-                        mention_roles: true,
-                        mention_channels: true,
-                        sticker_items: true,
-                        attachments: true,
-                        referenced_message: {
-                            author: true,
-                            webhook: true,
-                            application: true,
-                            mentions: true,
-                            mention_roles: true,
-                            mention_channels: true,
-                            sticker_items: true,
-                            attachments: true,
-                        },
-                    },
+                    relations: { author: true },
                 });
+                logRoomContextTiming("message_load", Date.now() - tMsgLoad);
 
+                const tSer = Date.now();
                 const endpoint = Config.get().cdn.endpointPublic;
                 const ret = messagesList.map((x: Message) => {
                     const msgJson = x.toJSON();
@@ -163,37 +174,13 @@ router.get(
                     });
                     return msgJson;
                 });
-
-                await Promise.all(
-                    ret
-                        .filter((x: MessageCreateSchema) => x.interaction_metadata && !x.interaction_metadata.user)
-                        .map(async (x: MessageCreateSchema) => {
-                            x.interaction_metadata!.user = x.interaction!.user = await User.findOneOrFail({
-                                where: { id: (x as Message).interaction_metadata!.user_id },
-                            });
-                        }),
-                );
-
-                await Promise.all(
-                    ret
-                        .filter((msg) => msg.message_reference && !msg.referenced_message?.id)
-                        .map(async (msg) => {
-                            const whereOptions: { id: string; guild_id?: string; channel_id?: string } = {
-                                id: msg.message_reference!.message_id,
-                            };
-                            if (msg.message_reference!.guild_id) whereOptions.guild_id = msg.message_reference!.guild_id;
-                            if (msg.message_reference!.channel_id) whereOptions.channel_id = msg.message_reference!.channel_id;
-                            msg.referenced_message = await Message.findOne({
-                                where: whereOptions,
-                                relations: { author: true, mentions: true, mention_roles: true, mention_channels: true },
-                            });
-                        }),
-                );
+                logRoomContextTiming("serialization", Date.now() - tSer);
 
                 messages = ret;
             }
         }
 
+        logRoomContextTiming("total", Date.now() - t0);
         return res.json({
             channels,
             active_channel_id: activeChannelId,
