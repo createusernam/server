@@ -81,7 +81,7 @@ router.post("/", route({}), async (req: Request, res: Response) => {
     if (body.guild_id) {
         interactionData.context = 0;
         interactionData.guild_id = body.guild_id;
-        interactionData.app_permissions = (await getPermission(body.application_id, body.guild_id, body.channel_id)).bitfield.toString();
+        interactionData.app_permissions = (await getPermission(req.user_id, body.guild_id, body.channel_id)).bitfield.toString();
 
         const guildId = String(body.guild_id);
         const userId = String(req.user_id);
@@ -102,13 +102,14 @@ router.post("/", route({}), async (req: Request, res: Response) => {
             }
             member = await Member.findOne({ where: { guild_id: guildId, id: userId } });
             if (!member) {
-                // Diagnostic: raw SELECT to check if the row exists in the DB the app is connected to
                 const db = getDatabase();
                 let rawRows = -1;
+                let rawRow: { index: number; id: string; guild_id: string } | null = null;
                 if (db) {
                     try {
                         const raw = await db.query("SELECT index, id, guild_id FROM members WHERE guild_id = $1 AND id = $2", [guildId, userId]);
                         rawRows = Array.isArray(raw) ? raw.length : 0;
+                        if (rawRows === 1 && raw[0]) rawRow = raw[0] as { index: number; id: string; guild_id: string };
                     } catch (e) {
                         rawRows = -2;
                         console.warn("[interactions] 404 diagnostic: raw SELECT failed", e);
@@ -124,8 +125,14 @@ router.post("/", route({}), async (req: Request, res: Response) => {
                         return "DATABASE url parse failed";
                     }
                 })();
-                console.warn("[interactions] 404: member still null after addToGuild guild_id=%s user_id=%s raw_select_rows=%s db=%s", guildId, userId, rawRows, dbHint);
-                throw new HTTPError("Member could not be found", 404);
+                if (rawRow) {
+                    member = await Member.findOne({ where: { index: String(rawRow.index) } });
+                    if (member && !member.user) member.user = await User.findOneOrFail({ where: { id: member.id } });
+                }
+                if (!member) {
+                    console.warn("[interactions] 404: member still null after addToGuild guild_id=%s user_id=%s raw_select_rows=%s db=%s", guildId, userId, rawRows, dbHint);
+                    throw new HTTPError("Member could not be found", 404);
+                }
             }
         }
         if (!member.user) {
@@ -142,7 +149,7 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         interactionData.member = member.toPublicMember();
     } else {
         interactionData.user = user.toPublicUser();
-        interactionData.app_permissions = (await getPermission(body.application_id, "", body.channel_id)).bitfield.toString();
+        interactionData.app_permissions = (await getPermission(req.user_id, "", body.channel_id)).bitfield.toString();
 
         if (body.channel_id === body.application_id) {
             interactionData.context = 1;
