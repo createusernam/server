@@ -21,7 +21,20 @@ import { InteractionSchema } from "@spacebar/schemas";
 import { route } from "@spacebar/api";
 import { HTTPError } from "lambert-server";
 import { Request, Response, Router } from "express";
-import { Config, emitEvent, getPermission, Guild, InteractionCreateEvent, InteractionFailureEvent, InteractionType, Member, Message, Snowflake, User } from "@spacebar/util";
+import {
+    Config,
+    emitEvent,
+    getDatabase,
+    getPermission,
+    Guild,
+    InteractionCreateEvent,
+    InteractionFailureEvent,
+    InteractionType,
+    Member,
+    Message,
+    Snowflake,
+    User,
+} from "@spacebar/util";
 import { pendingInteractions } from "@spacebar/util/imports/Interactions";
 import { InteractionCreateSchema } from "@spacebar/schemas/api/bots/InteractionCreateSchema";
 
@@ -70,25 +83,53 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         interactionData.guild_id = body.guild_id;
         interactionData.app_permissions = (await getPermission(body.application_id, body.guild_id, body.channel_id)).bitfield.toString();
 
-        const guild = await Guild.findOneOrFail({ where: { id: body.guild_id } });
-        let member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
+        const guildId = String(body.guild_id);
+        const userId = String(req.user_id);
+        const guild = await Guild.findOneOrFail({ where: { id: guildId } });
+        // Same pattern as room-context and GET guilds/:id: findOne without relations (relations can make TypeORM return null when the row exists)
+        let member = await Member.findOne({ where: { guild_id: guildId, id: userId } });
         if (!member) {
-            console.log(`[interactions] Member not found for guild_id=${body.guild_id} user_id=${req.user_id}, attempting addToGuild`);
+            console.log(`[interactions] Member not found for guild_id=${guildId} user_id=${userId}, attempting addToGuild`);
             try {
-                await Member.addToGuild(req.user_id, body.guild_id);
+                await Member.addToGuild(userId, guildId);
             } catch (err) {
                 const isAlreadyMember = err instanceof HTTPError && err.message?.includes("already a member");
                 if (isAlreadyMember) {
                     // Race or inconsistent state; re-fetch below
                 } else {
-                    console.warn(`[interactions] addToGuild failed guild_id=${body.guild_id} user_id=${req.user_id}`, err);
+                    console.warn(`[interactions] addToGuild failed guild_id=${guildId} user_id=${userId}`, err);
                 }
             }
-            member = await Member.findOne({ where: { guild_id: body.guild_id, id: req.user_id }, relations: { user: true } });
+            member = await Member.findOne({ where: { guild_id: guildId, id: userId } });
             if (!member) {
-                console.warn("[interactions] 404: member still null after addToGuild guild_id=%s user_id=%s", body.guild_id, req.user_id);
+                // Diagnostic: raw SELECT to check if the row exists in the DB the app is connected to
+                const db = getDatabase();
+                let rawRows = -1;
+                if (db) {
+                    try {
+                        const raw = await db.query("SELECT index, id, guild_id FROM members WHERE guild_id = $1 AND id = $2", [guildId, userId]);
+                        rawRows = Array.isArray(raw) ? raw.length : 0;
+                    } catch (e) {
+                        rawRows = -2;
+                        console.warn("[interactions] 404 diagnostic: raw SELECT failed", e);
+                    }
+                }
+                const dbHint = (() => {
+                    const u = process.env.DATABASE;
+                    if (!u || typeof u !== "string") return "DATABASE not set";
+                    try {
+                        const url = new URL(u.replace(/^postgres:\/\//, "http://"));
+                        return `${url.hostname}:${url.port || "5432"}${url.pathname || ""}`;
+                    } catch {
+                        return "DATABASE url parse failed";
+                    }
+                })();
+                console.warn("[interactions] 404: member still null after addToGuild guild_id=%s user_id=%s raw_select_rows=%s db=%s", guildId, userId, rawRows, dbHint);
                 throw new HTTPError("Member could not be found", 404);
             }
+        }
+        if (!member.user) {
+            member.user = await User.findOneOrFail({ where: { id: member.id } });
         }
 
         interactionData.guild = {
