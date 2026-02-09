@@ -42,6 +42,9 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
 
     const stream = d.streams?.find((element) => element.active);
 
+    const roomClients = Array.from(mediaServer.getClientsForRtcServer<WebRtcWebSocket>(voiceRoomId));
+    console.log(`[WebRTC] VIDEO from ${this.user_id}, room ${voiceRoomId} has ${roomClients.length} client(s)`);
+
     const clientsThatNeedUpdate = new Set<WebRtcClient<WebRtcWebSocket>>();
     const wantsToProduceAudio = d.audio_ssrc !== 0;
     const wantsToProduceVideo = d.video_ssrc !== 0 && stream?.active;
@@ -152,17 +155,21 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
     );
 
     // Renegotiation: send SESSION_DESCRIPTION (offer) so client gets ontrack for new remote audio
-    if (mediaServer.getRenegotiationOfferSDP) {
+    const hasRenegotiation = typeof mediaServer.getRenegotiationOfferSDP === "function";
+    console.log(`[WebRTC] renegotiation: getRenegotiationOfferSDP=${hasRenegotiation}, clientsThatNeedUpdate=${clientsThatNeedUpdate.size}`);
+    if (hasRenegotiation) {
         for (const client of clientsThatNeedUpdate) {
             const ws = client.websocket as WebRtcWebSocket;
             const codecs = ws.savedCodecs ?? [];
             const offerSdp = mediaServer.getRenegotiationOfferSDP(client, codecs);
+            console.log(`[WebRTC] renegotiation for ${client.user_id}: offerSdp length=${offerSdp?.length ?? 0}`);
             if (offerSdp) {
                 ws.pendingRenegotiationAnswer = true;
                 await Send(ws, {
                     op: VoiceOPCodes.SESSION_DESCRIPTION,
                     d: { type: "offer", sdp: offerSdp },
                 });
+                console.log(`[WebRTC] sent SESSION_DESCRIPTION offer to ${client.user_id}`);
             }
         }
     }
