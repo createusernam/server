@@ -49,34 +49,11 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
 
     const clientsThatNeedUpdate = new Set<WebRtcClient<WebRtcWebSocket>>();
 
-    // this is to handle a really weird case where the client sends audio info before the
-    // dtls ice connection is completely connected. Wait for connection for 3 seconds
-    // and if no connection, just ignore this message
+    // If VIDEO arrives before SELECT_PROTOCOL (or before DTLS is up), return so we don't block
+    // message processing. Client must send VIDEO again after receiving SESSION_DESCRIPTION answer.
     if (!this.webRtcClient.webrtcConnected) {
-        console.log(`[WebRTC] VIDEO from ${this.user_id}: not webrtcConnected, waiting or returning`);
-        if (wantsToProduceAudio) {
-            try {
-                await Promise.race([
-                    new Promise<void>((resolve, reject) => {
-                        this.webRtcClient?.emitter.once("connected", () => resolve());
-                    }),
-                    new Promise<void>((resolve, reject) => {
-                        // Reject after 3 seconds if still not connected
-                        setTimeout(() => {
-                            if (this.webRtcClient?.webrtcConnected) resolve();
-                            else reject();
-                        }, 3000);
-                    }),
-                ]);
-                console.log(`[WebRTC] VIDEO from ${this.user_id}: webrtcConnected after wait`);
-            } catch (e) {
-                console.log(`[WebRTC] VIDEO from ${this.user_id}: webrtcConnected wait failed, returning`);
-                return; // just ignore this message if client didn't connect within 3 seconds
-            }
-        } else {
-            console.log(`[WebRTC] VIDEO from ${this.user_id}: not wantsAudio, returning`);
-            return;
-        }
+        console.log(`[WebRTC] VIDEO from ${this.user_id}: not webrtcConnected, returning (client will resend after answer)`);
+        return;
     }
 
     await Send(this, { op: VoiceOPCodes.MEDIA_SINK_WANTS, d: { any: 100 } });
