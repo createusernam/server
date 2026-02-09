@@ -102,7 +102,27 @@ export async function initDatabase(): Promise<DataSource> {
 
     console.log(`[Database] ${yellow(`Connecting to ${DatabaseType} db`)}`);
 
-    dbConnection = await DataSourceOptions.initialize();
+    const maxAttempts = DatabaseType === "postgres" ? 30 : 1;
+    const delayMs = 2000;
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            dbConnection = await DataSourceOptions.initialize();
+            break;
+        } catch (err: unknown) {
+            lastError = err;
+            const code = (err as { code?: string })?.code;
+            const msg = typeof (err as Error)?.message === "string" ? (err as Error).message : "";
+            const isRecovery = code === "57P03" || msg.includes("not yet accepting connections") || msg.includes("in recovery mode");
+            if (DatabaseType === "postgres" && attempt < maxAttempts && isRecovery) {
+                console.log(`[Database] ${yellow(`Postgres not ready (${code ?? "connection"}), retry ${attempt}/${maxAttempts} in ${delayMs}ms...`)}`);
+                await new Promise((r) => setTimeout(r, delayMs));
+            } else {
+                throw err;
+            }
+        }
+    }
+    if (!dbConnection) throw lastError;
 
     if (DatabaseType === "sqlite") {
         console.log(`[Database] ${yellow("Warning: SQLite is not supported. Forcing sync, this may lead to data loss!")}`);
