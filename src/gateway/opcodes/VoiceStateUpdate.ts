@@ -150,6 +150,22 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
             channel_id: voiceState.guild_id ? undefined : voiceState.channel_id, // only DM voice calls have this set, and DM channel is one where guild_id is null
         };
         console.log(`[Gateway] Sending VOICE_SERVER_UPDATE to user ${voiceState.user_id}:`, voiceServerUpdateData);
+        // #region agent log
+        try {
+            fetch("http://127.0.0.1:7242/ingest/05384bd0-10df-477f-9e7d-06f67f11b7c6", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    location: "VoiceStateUpdate.ts:VOICE_SERVER_UPDATE",
+                    message: "VOICE_SERVER_UPDATE payload",
+                    data: { channel_id: voiceServerUpdateData.channel_id, guild_id: voiceState.guild_id, voiceChannelId: voiceState.channel_id },
+                    timestamp: Date.now(),
+                    hypothesisId: "H1",
+                }),
+            }).catch(() => {});
+            // eslint-disable-next-line no-empty -- ingest endpoint may be unavailable (e.g. on VPS)
+        } catch {}
+        // #endregion
 
         await emitEvent({
             event: "VOICE_SERVER_UPDATE",
