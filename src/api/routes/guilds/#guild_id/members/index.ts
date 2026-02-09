@@ -21,7 +21,6 @@ import { Member } from "@spacebar/util";
 import { Request, Response, Router } from "express";
 import { HTTPError } from "lambert-server";
 import { MoreThan } from "typeorm";
-import { PublicMemberProjection } from "@spacebar/schemas";
 
 const router = Router({ mergeParams: true });
 
@@ -60,12 +59,12 @@ router.get(
 
         const members = await Member.find({
             where: { guild_id, ...query },
-            select: PublicMemberProjection,
+            relations: { user: true, roles: true },
             take: limit,
             order: { id: "ASC" },
         });
 
-        return res.json(members);
+        return res.json(members.map((m) => m.toPublicMember()));
     },
 );
 
