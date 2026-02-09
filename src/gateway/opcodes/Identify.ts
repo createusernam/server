@@ -740,9 +740,12 @@ export async function onIdentify(this: WebSocket, data: Payload) {
         }),
     );
 
+    // guilds array from members.map(...) contains toJSON() results which may not have voice_states; get voice_states from member.guild which was populated earlier
     const readySupplementalGuilds = (guilds.filter((guild) => !guild.unavailable) as Guild[]).map((guild) => {
+        const memberGuild = members.find((m) => m.guild_id === guild.id)?.guild;
+        const voice_states = memberGuild?.voice_states ?? [];
         return {
-            voice_states: guild.voice_states.map((state) => state.toPublicVoiceState()),
+            voice_states: voice_states.map((state) => state.toPublicVoiceState()),
             id: guild.id,
             embedded_activities: [],
         };
