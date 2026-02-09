@@ -47,6 +47,8 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
     const wantsToProduceVideo = d.video_ssrc !== 0 && stream?.active;
     console.log(`[WebRTC] VIDEO from ${this.user_id}, room ${voiceRoomId} has ${roomClients.length} client(s), audio_ssrc=${d.audio_ssrc} wantsAudio=${wantsToProduceAudio}`);
 
+    const clientsThatNeedUpdate = new Set<WebRtcClient<WebRtcWebSocket>>();
+
     // this is to handle a really weird case where the client sends audio info before the
     // dtls ice connection is completely connected. Wait for connection for 3 seconds
     // and if no connection, just ignore this message
