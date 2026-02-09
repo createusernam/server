@@ -53,6 +53,7 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
     // dtls ice connection is completely connected. Wait for connection for 3 seconds
     // and if no connection, just ignore this message
     if (!this.webRtcClient.webrtcConnected) {
+        console.log(`[WebRTC] VIDEO from ${this.user_id}: not webrtcConnected, waiting or returning`);
         if (wantsToProduceAudio) {
             try {
                 await Promise.race([
@@ -67,10 +68,15 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
                         }, 3000);
                     }),
                 ]);
+                console.log(`[WebRTC] VIDEO from ${this.user_id}: webrtcConnected after wait`);
             } catch (e) {
+                console.log(`[WebRTC] VIDEO from ${this.user_id}: webrtcConnected wait failed, returning`);
                 return; // just ignore this message if client didn't connect within 3 seconds
             }
-        } else return;
+        } else {
+            console.log(`[WebRTC] VIDEO from ${this.user_id}: not wantsAudio, returning`);
+            return;
+        }
     }
 
     await Send(this, { op: VoiceOPCodes.MEDIA_SINK_WANTS, d: { any: 100 } });
@@ -97,14 +103,17 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
         // now check that all clients have subscribed to our audio
         for (const client of mediaServer.getClientsForRtcServer<WebRtcWebSocket>(voiceRoomId)) {
             if (client.user_id === this.user_id) continue;
-
-            if (!client.isSubscribedToTrack(this.user_id, "audio")) {
+            const alreadySubscribed = client.isSubscribedToTrack(this.user_id, "audio");
+            if (!alreadySubscribed) {
                 console.log(`[${client.user_id}] subscribing to audio track ssrcs: ${d.audio_ssrc}`);
                 await client.subscribeToTrack(this.webRtcClient.user_id, "audio");
 
                 clientsThatNeedUpdate.add(client);
+            } else {
+                console.log(`[WebRTC] VIDEO from ${this.user_id}: ${client.user_id} already subscribed to our audio, skip`);
             }
         }
+        console.log(`[WebRTC] VIDEO from ${this.user_id}: after audio loop clientsThatNeedUpdate.size=${clientsThatNeedUpdate.size}`);
     }
     // check if client has signaled that it will send video
     if (wantsToProduceVideo) {
