@@ -24,9 +24,10 @@ export async function onSelectProtocol(this: WebRtcWebSocket, payload: VoicePayl
     const d = payload.d as { type?: string; sdp?: string; protocol?: string } | undefined;
     // Renegotiation: client sends SESSION_DESCRIPTION with type "answer" in response to our offer
     if (d?.type === "answer" && typeof d.sdp === "string") {
-        if (!this.pendingRenegotiationAnswer || !mediaServer.applyRemoteAnswer) return;
+        const applyRemoteAnswer = mediaServer.applyRemoteAnswer;
+        if (!this.pendingRenegotiationAnswer || typeof applyRemoteAnswer !== "function") return;
         try {
-            await mediaServer.applyRemoteAnswer(this.webRtcClient, d.sdp);
+            await applyRemoteAnswer(this.webRtcClient, d.sdp);
             this.pendingRenegotiationAnswer = false;
         } catch (err) {
             console.error("[WebRTC] applyRemoteAnswer failed", err);

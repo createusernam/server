@@ -155,13 +155,14 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
     );
 
     // Renegotiation: send SESSION_DESCRIPTION (offer) so client gets ontrack for new remote audio
-    const hasRenegotiation = typeof mediaServer.getRenegotiationOfferSDP === "function";
+    const getRenegotiationOfferSDP = mediaServer.getRenegotiationOfferSDP;
+    const hasRenegotiation = typeof getRenegotiationOfferSDP === "function";
     console.log(`[WebRTC] renegotiation: getRenegotiationOfferSDP=${hasRenegotiation}, clientsThatNeedUpdate=${clientsThatNeedUpdate.size}`);
-    if (hasRenegotiation) {
+    if (hasRenegotiation && getRenegotiationOfferSDP) {
         for (const client of clientsThatNeedUpdate) {
             const ws = client.websocket as WebRtcWebSocket;
             const codecs = ws.savedCodecs ?? [];
-            const offerSdp = mediaServer.getRenegotiationOfferSDP(client, codecs);
+            const offerSdp = getRenegotiationOfferSDP(client, codecs);
             console.log(`[WebRTC] renegotiation for ${client.user_id}: offerSdp length=${offerSdp?.length ?? 0}`);
             if (offerSdp) {
                 ws.pendingRenegotiationAnswer = true;
@@ -235,9 +236,10 @@ export async function subscribeToProducers(this: WebRtcWebSocket): Promise<void>
     );
 
     // Renegotiation: if we subscribed to any producers, send SESSION_DESCRIPTION (offer) to this client
-    if (didSubscribe && mediaServer.getRenegotiationOfferSDP && this.webRtcClient) {
+    const getOfferSDP = mediaServer.getRenegotiationOfferSDP;
+    if (didSubscribe && typeof getOfferSDP === "function" && this.webRtcClient) {
         const codecs = this.savedCodecs ?? [];
-        const offerSdp = mediaServer.getRenegotiationOfferSDP(this.webRtcClient, codecs);
+        const offerSdp = getOfferSDP(this.webRtcClient, codecs);
         if (offerSdp) {
             this.pendingRenegotiationAnswer = true;
             await Send(this, {
