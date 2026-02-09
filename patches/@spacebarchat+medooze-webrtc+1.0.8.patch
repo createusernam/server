@@ -1,0 +1,74 @@
+diff --git a/node_modules/@spacebarchat/medooze-webrtc/src/MedoozeSignalingDelegate.ts b/node_modules/@spacebarchat/medooze-webrtc/src/MedoozeSignalingDelegate.ts
+index cf4c2f7..24ed9c1 100644
+--- a/node_modules/@spacebarchat/medooze-webrtc/src/MedoozeSignalingDelegate.ts
++++ b/node_modules/@spacebarchat/medooze-webrtc/src/MedoozeSignalingDelegate.ts
+@@ -238,6 +238,69 @@ export class MedoozeSignalingDelegate implements SignalingDelegate {
+ 		this._rooms.get(client.voiceRoomId)?.onClientLeave(client);
+ 	};
+ 
++	/**
++	 * Build SDP offer for renegotiation: one m=audio (recvonly) per outgoing audio track
++	 * so the client can setRemoteDescription(offer) and get ontrack for each.
++	 */
++	public getRenegotiationOfferSDP(client: WebRtcClient<any>, codecs: Codec[]): string {
++		const room = this._rooms.get(client.voiceRoomId);
++		const medoozeClient = client as MedoozeWebRtcClient;
++		const transport = medoozeClient.transport;
++		if (!room || !transport) return "";
++
++		const dtls = transport.getLocalDTLSInfo();
++		const ice = transport.getLocalICEInfo();
++		const fingerprint = dtls.getHash() + " " + dtls.getFingerprint();
++		const candidates = transport.getLocalCandidates();
++		const candidate = candidates[0];
++		if (!candidate) return "";
++
++		const opusPt = codecs.find((c) => c.name === "opus")?.payload_type ?? 111;
++		const lines: string[] = [
++			"v=0",
++			"o=- 0 0 IN IP4 0.0.0.0",
++			"s=-",
++			"t=0 0",
++		];
++
++		let mid = 0;
++		for (const other of room.clients.values()) {
++			if (other.user_id === client.user_id) continue;
++			if (!client.isSubscribedToTrack(other.user_id, "audio")) continue;
++			const ssrcs = client.getOutgoingStreamSSRCsForUser(other.user_id);
++			const audioSsrc = ssrcs.audio_ssrc;
++			if (audioSsrc == null) continue;
++			lines.push(`m=audio ${this._port} UDP/TLS/RTP/SAVPF ${opusPt}`);
++			lines.push("a=recvonly");
++			lines.push("a=rtcp-mux");
++			lines.push(`a=mid:${mid}`);
++			lines.push(`a=ssrc:${audioSsrc} cname:spacebar`);
++			mid++;
++		}
++
++		// Need at least one m= section; if none (mid===0), don't send offer
++		if (mid === 0) return "";
++
++		lines.push(
++			`a=ice-ufrag:${ice.getUfrag()}`,
++			`a=ice-pwd:${ice.getPwd()}`,
++			`a=fingerprint:${fingerprint}`,
++			`a=candidate:1 1 ${candidate.getTransport()} ${candidate.getFoundation()} ${candidate.getAddress()} ${candidate.getPort()} typ host`,
++		);
++		return lines.join("\r\n") + "\r\n";
++	}
++
++	/**
++	 * Apply client's answer SDP to the transport (renegotiation).
++	 */
++	public async applyRemoteAnswer(client: WebRtcClient<any>, sdp: string): Promise<void> {
++		const medoozeClient = client as MedoozeWebRtcClient;
++		const transport = medoozeClient.transport;
++		if (!transport) return;
++		const answer = SDPInfo.parse(sdp);
++		transport.setRemoteProperties(answer);
++	}
++
+ 	public updateSDP(offer: string): void {
+ 		throw new Error("Method not implemented.");
+ 	}

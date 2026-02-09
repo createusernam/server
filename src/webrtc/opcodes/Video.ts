@@ -150,6 +150,22 @@ export async function onVideo(this: WebRtcWebSocket, payload: VoicePayload) {
             });
         }),
     );
+
+    // Renegotiation: send SESSION_DESCRIPTION (offer) so client gets ontrack for new remote audio
+    if (mediaServer.getRenegotiationOfferSDP) {
+        for (const client of clientsThatNeedUpdate) {
+            const ws = client.websocket as WebRtcWebSocket;
+            const codecs = ws.savedCodecs ?? [];
+            const offerSdp = mediaServer.getRenegotiationOfferSDP(client, codecs);
+            if (offerSdp) {
+                ws.pendingRenegotiationAnswer = true;
+                await Send(ws, {
+                    op: VoiceOPCodes.SESSION_DESCRIPTION,
+                    d: { type: "offer", sdp: offerSdp },
+                });
+            }
+        }
+    }
 }
 
 // check if we are not subscribed to producers in this server, if not, subscribe
@@ -157,6 +173,7 @@ export async function subscribeToProducers(this: WebRtcWebSocket): Promise<void>
     if (!this.webRtcClient || !this.webRtcClient.webrtcConnected) return;
 
     const clients = mediaServer.getClientsForRtcServer<WebRtcWebSocket>(this.webRtcClient.voiceRoomId);
+    let didSubscribe = false;
 
     await Promise.all(
         Array.from(clients).map(async (client) => {
@@ -167,11 +184,13 @@ export async function subscribeToProducers(this: WebRtcWebSocket): Promise<void>
             if (client.isProducingAudio() && !this.webRtcClient!.isSubscribedToTrack(client.user_id, "audio")) {
                 await this.webRtcClient!.subscribeToTrack(client.user_id, "audio");
                 needsUpdate = true;
+                didSubscribe = true;
             }
 
             if (client.isProducingVideo() && !this.webRtcClient!.isSubscribedToTrack(client.user_id, "video")) {
                 await this.webRtcClient!.subscribeToTrack(client.user_id, "video");
                 needsUpdate = true;
+                didSubscribe = true;
             }
 
             if (!needsUpdate) return;
@@ -207,4 +226,17 @@ export async function subscribeToProducers(this: WebRtcWebSocket): Promise<void>
             });
         }),
     );
+
+    // Renegotiation: if we subscribed to any producers, send SESSION_DESCRIPTION (offer) to this client
+    if (didSubscribe && mediaServer.getRenegotiationOfferSDP && this.webRtcClient) {
+        const codecs = this.savedCodecs ?? [];
+        const offerSdp = mediaServer.getRenegotiationOfferSDP(this.webRtcClient, codecs);
+        if (offerSdp) {
+            this.pendingRenegotiationAnswer = true;
+            await Send(this, {
+                op: VoiceOPCodes.SESSION_DESCRIPTION,
+                d: { type: "offer", sdp: offerSdp },
+            });
+        }
+    }
 }

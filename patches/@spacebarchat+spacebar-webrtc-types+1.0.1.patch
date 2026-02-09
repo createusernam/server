@@ -1,0 +1,13 @@
+diff --git a/node_modules/@spacebarchat/spacebar-webrtc-types/index.d.ts b/node_modules/@spacebarchat/spacebar-webrtc-types/index.d.ts
+index d0742ae..569783a 100644
+--- a/node_modules/@spacebarchat/spacebar-webrtc-types/index.d.ts
++++ b/node_modules/@spacebarchat/spacebar-webrtc-types/index.d.ts
+@@ -86,4 +86,8 @@ export interface SignalingDelegate {
+     getClientsForRtcServer<T>(rtcServerId: string): Set<WebRtcClient<T>>;
+     get ip(): string;
+     get port(): number;
++    /** Build SDP offer for renegotiation (optional, for voice renegotiation). */
++    getRenegotiationOfferSDP?(client: WebRtcClient<any>, codecs: Codec[]): string;
++    /** Apply client answer to transport (optional, for voice renegotiation). */
++    applyRemoteAnswer?(client: WebRtcClient<any>, sdp: string): Promise<void>;
+ }

@@ -21,11 +21,25 @@ import { VoiceOPCodes, VoicePayload, WebRtcWebSocket, mediaServer, Send } from "
 export async function onSelectProtocol(this: WebRtcWebSocket, payload: VoicePayload) {
     if (!this.webRtcClient) return;
 
+    const d = payload.d as { type?: string; sdp?: string; protocol?: string } | undefined;
+    // Renegotiation: client sends SESSION_DESCRIPTION with type "answer" in response to our offer
+    if (d?.type === "answer" && typeof d.sdp === "string") {
+        if (!this.pendingRenegotiationAnswer || !mediaServer.applyRemoteAnswer) return;
+        try {
+            await mediaServer.applyRemoteAnswer(this.webRtcClient, d.sdp);
+            this.pendingRenegotiationAnswer = false;
+        } catch (err) {
+            console.error("[WebRTC] applyRemoteAnswer failed", err);
+        }
+        return;
+    }
+
     const data = validateSchema("SelectProtocolSchema", payload.d) as SelectProtocolSchema;
 
     // UDP protocol not currently supported. Maybe in the future?
     if (data.protocol !== "webrtc") return this.close(4000, "only webrtc protocol supported currently");
 
+    this.savedCodecs = data.codecs ?? [];
     const response = await mediaServer.onOffer(this.webRtcClient, data.sdp!, data.codecs ?? []);
 
     await Send(this, {

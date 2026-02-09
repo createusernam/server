@@ -744,11 +744,15 @@ export async function onIdentify(this: WebSocket, data: Payload) {
     const readySupplementalGuilds = (guilds.filter((guild) => !guild.unavailable) as Guild[]).map((guild) => {
         const memberGuild = members.find((m) => m.guild_id === guild.id)?.guild;
         const voice_states = memberGuild?.voice_states ?? [];
-        let serializedVoiceStates: ReturnType<VoiceState["toPublicVoiceState"]>[] = [];
-        try {
-            serializedVoiceStates = voice_states.map((state) => state.toPublicVoiceState());
-        } catch (e) {
-            console.error(`[Gateway] ReadySupplemental voice_states serialization failed for guild ${guild.id}:`, e);
+        const serializedVoiceStates: ReturnType<VoiceState["toPublicVoiceState"]>[] = [];
+        for (const state of voice_states) {
+            if (state && typeof (state as VoiceState).toPublicVoiceState === "function") {
+                try {
+                    serializedVoiceStates.push((state as VoiceState).toPublicVoiceState());
+                } catch (e) {
+                    // skip invalid entry
+                }
+            }
         }
         return {
             voice_states: serializedVoiceStates,
