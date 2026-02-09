@@ -72,7 +72,7 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
             mute: false,
             suppress: false,
             self_video: body.self_video ?? false,
-            self_stream: body.self_stream ?? false,
+            self_stream: false, // not in VoiceStateUpdateSchema; client does not send it
         });
     }
 

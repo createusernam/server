@@ -81,12 +81,11 @@ router.post("/", route({}), async (req: Request, res: Response) => {
     if (body.guild_id) {
         interactionData.context = 0;
         interactionData.guild_id = body.guild_id;
-        interactionData.app_permissions = (await getPermission(req.user_id, body.guild_id, body.channel_id)).bitfield.toString();
 
         const guildId = String(body.guild_id);
         const userId = String(req.user_id);
         const guild = await Guild.findOneOrFail({ where: { id: guildId } });
-        // Same pattern as room-context and GET guilds/:id: findOne without relations (relations can make TypeORM return null when the row exists)
+        // Ensure member exists before getPermission (getPermission uses Member.findOneOrFail and would throw 404 otherwise)
         let member = await Member.findOne({ where: { guild_id: guildId, id: userId } });
         let memberCreatedByAddToGuild = false;
         if (!member) {
@@ -133,6 +132,9 @@ router.post("/", route({}), async (req: Request, res: Response) => {
                 if (rawRow) {
                     member = await Member.findOne({ where: { index: String(rawRow.index) } });
                     if (member && !member.user) member.user = await User.findOneOrFail({ where: { id: member.id } });
+                    if (!member) {
+                        console.warn("[interactions] 404 diagnostic: raw SELECT returned 1 row but Member.findOne by index=%s returned null", rawRow.index);
+                    }
                 }
                 if (!member) {
                     console.warn("[interactions] 404: member still null after addToGuild guild_id=%s user_id=%s raw_select_rows=%s db=%s", guildId, userId, rawRows, dbHint);
@@ -143,6 +145,8 @@ router.post("/", route({}), async (req: Request, res: Response) => {
         if (!member.user) {
             member.user = await User.findOneOrFail({ where: { id: member.id } });
         }
+
+        interactionData.app_permissions = (await getPermission(req.user_id, body.guild_id, body.channel_id)).bitfield.toString();
 
         interactionData.guild = {
             id: guild.id,
