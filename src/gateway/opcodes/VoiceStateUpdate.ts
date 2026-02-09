@@ -71,6 +71,8 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
             deaf: false,
             mute: false,
             suppress: false,
+            self_video: body.self_video ?? false,
+            self_stream: body.self_stream ?? false,
         });
     }
 
@@ -90,12 +92,14 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
 
     //TODO the member should only have these properties: hoisted_role, deaf, joined_at, mute, roles, user
     //TODO the member.user should only have these properties: avatar, discriminator, id, username
-    //TODO this may fail
+    // Use findOne so voice works even if Member is missing (e.g. room just loaded); otherwise findOneOrFail would block VOICE_SERVER_UPDATE
     if (body.guild_id) {
-        voiceState.member = await Member.findOneOrFail({
+        const member = await Member.findOne({
             where: { id: voiceState.user_id, guild_id: voiceState.guild_id },
             relations: { user: true, roles: true },
         });
+        if (member) voiceState.member = member;
+        else console.warn(`[Gateway] VoiceStateUpdate: no Member for user ${voiceState.user_id} in guild ${voiceState.guild_id}; VOICE_SERVER_UPDATE will still be sent.`);
     }
 
     //If the session changed we generate a new token
